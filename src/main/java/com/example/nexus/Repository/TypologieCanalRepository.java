@@ -1,0 +1,11 @@
+package com.example.nexus.Repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.nexus.Entitie.TypologieCanal;
+
+@Repository
+public interface TypologieCanalRepository extends JpaRepository<TypologieCanal, Long> {
+    // Méthodes personnalisées peuvent être ajoutées ici si nécessaire
+}
