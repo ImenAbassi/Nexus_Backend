@@ -26,8 +26,8 @@ public class PlanningUser {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+@JoinColumn(name = "user_idUser", referencedColumnName = "idUser", nullable = false)
+private User user;
 
     private LocalTime heureDebut; // Début de la plage horaire
     private LocalTime heureFin; // Fin de la plage horaire
