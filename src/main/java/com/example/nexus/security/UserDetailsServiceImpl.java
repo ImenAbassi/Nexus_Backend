@@ -1,4 +1,4 @@
-package com.example.nexus.Services;
+package com.example.nexus.security;
 
 import java.util.ArrayList;
 
@@ -20,9 +20,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByCin(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        return new org.springframework.security.core.userdetails.User(user.getCin(), user.getPassword(),
-                new ArrayList<>());
+        return new org.springframework.security.core.userdetails.User(
+                user.getCin(),
+                user.getPassword(),
+                new ArrayList<>()
+        );
     }
 }

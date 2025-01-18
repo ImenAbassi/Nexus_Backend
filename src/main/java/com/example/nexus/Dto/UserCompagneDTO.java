@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import com.example.nexus.Entitie.Fonction;
 import com.example.nexus.Entitie.User;
 
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +18,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserCompagneDTO {
-   
-   private Long userId;
+
+    private Long userId;
     private User user;
     private Long compagneId;
     private Long supervisorId;

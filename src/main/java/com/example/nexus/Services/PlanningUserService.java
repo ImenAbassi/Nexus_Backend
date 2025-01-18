@@ -20,7 +20,7 @@ public class PlanningUserService {
     }
 
     public List<PlanningUser> getPlanningParUtilisateur(Long userId) {
-        return planningUserRepository.findByUserId(userId);
+        return planningUserRepository.findByUserIdUser(userId);
     }
 
     public List<PlanningUser> getPlanningParPeriode(LocalTime debut, LocalTime fin) {

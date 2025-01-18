@@ -4,16 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class Fonction {
 
     @Id
@@ -21,4 +13,42 @@ public class Fonction {
     private Long id;
 
     private String nom; // Exemple : "DIRECTION", "RH", "RECRUTEUR", etc.
+
+    public Fonction() {
+    }
+
+    
+
+    public Fonction(Long id, String nom) {
+        this.id = id;
+        this.nom = nom;
+    }
+
+
+
+    public Fonction(String nom) {
+        this.nom = nom;
+    }
+
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    
+
+    
 }

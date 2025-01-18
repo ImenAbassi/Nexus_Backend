@@ -42,9 +42,15 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public UserCompagne createUserAndAssignToCompagne(User user, Long compagneId, Fonction fonction, String commentaire,
-            LocalDate dateAffectation, LocalDate dateFinAffectation, LocalDateTime dateHeureFormation) {
+   /*  @Transactional
+    public UserCompagne createUserAndAssignToCompagne(
+            User user,
+            Long compagneId,
+            Fonction fonction,
+            String commentaire,
+            LocalDate dateAffectation,
+            LocalDate dateFinAffectation,
+            LocalDateTime dateHeureFormation) {
         // Encoder le mot de passe
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -53,55 +59,98 @@ public class UserService {
 
         // Trouver la Compagne
         Compagne compagne = compagneRepository.findById(compagneId)
-                .orElseThrow(() -> new RuntimeException("Compagne not found")); // Créer et sauvegarder UserCompagne
+                .orElseThrow(() -> new RuntimeException("Compagne not found"));
+
+        // Créer et sauvegarder UserCompagne
         UserCompagne userCompagne = new UserCompagne();
         userCompagne.setUser(savedUser);
         userCompagne.setCompagne(compagne);
         userCompagne.setFonction(fonction);
         userCompagne.setCommentaire(commentaire);
-        userCompagne.setDateAffectation(LocalDate.now());
+        userCompagne.setDateAffectation(dateAffectation != null ? dateAffectation : LocalDate.now());
         userCompagne.setDateFinAffectation(dateFinAffectation);
         userCompagne.setDateHeureFormation(dateHeureFormation);
+
         return userCompagneRepository.save(userCompagne);
+    }*/
+
+    @Transactional
+public UserCompagne createUserAndAssignToCompagne(
+        User user,
+        Long compagneId,
+        Fonction fonction,
+        String commentaire,
+        LocalDate dateAffectation,
+        LocalDate dateFinAffectation,
+        LocalDateTime dateHeureFormation) {
+
+    // Validation utilisateur
+    if (user == null || user.getCin() == null || user.getNom() == null || user.getPrenom() == null) {
+        throw new RuntimeException("Les informations de l'utilisateur sont incomplètes.");
     }
+
+    // Encoder le mot de passe
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+    // Sauvegarder l'utilisateur
+    User savedUser = userRepository.save(user);
+
+    // Trouver la Compagne
+    Compagne compagne = compagneRepository.findById(compagneId)
+            .orElseThrow(() -> new RuntimeException("Compagne non trouvée."));
+
+    // Créer et sauvegarder UserCompagne
+    UserCompagne userCompagne = new UserCompagne();
+    userCompagne.setUser(savedUser);
+    userCompagne.setCompagne(compagne);
+    userCompagne.setFonction(fonction);
+    userCompagne.setCommentaire(commentaire);
+    userCompagne.setDateAffectation(dateAffectation != null ? dateAffectation : LocalDate.now());
+    userCompagne.setDateFinAffectation(dateFinAffectation);
+    userCompagne.setDateHeureFormation(dateHeureFormation);
+
+    return userCompagneRepository.save(userCompagne);
+}
+
 
     // Récupérer un UserCompagne par son ID
     public UserCompagne findById(Long userCompagneId) {
         Optional<UserCompagne> userCompagneOpt = userCompagneRepository.findById(userCompagneId);
         return userCompagneOpt.orElse(null); // Retourne null si l'élément n'existe pas
     }
+
     @Transactional
     public UserCompagne updateUserCompagne(Long userCompagneId, UserCompagneDTO dto) {
         // Trouver l'entité UserCompagne existante
         Optional<UserCompagne> userCompagneOpt = userCompagneRepository.findById(userCompagneId);
         if (!userCompagneOpt.isPresent()) {
-            return null;  // Si l'entité UserCompagne n'existe pas, retourner null
+            return null; // Si l'entité UserCompagne n'existe pas, retourner null
         }
-    
+
         // Récupérer l'entité UserCompagne
         UserCompagne userCompagne = userCompagneOpt.get();
-    
+
         // Récupérer l'utilisateur et la compagne associés depuis le DTO
         User user = dto.getUser(); // Utilisateur transmis dans le DTO
         Optional<Compagne> compagneOpt = compagneRepository.findById(dto.getCompagneId());
-    
+
         if (!compagneOpt.isPresent()) {
-            return null;  // Si la compagne n'existe pas, retourner null
+            return null; // Si la compagne n'existe pas, retourner null
         }
-    
+
         // Mettre à jour les champs modifiables dans l'entité UserCompagne
-        userCompagne.setUser(user);  // Mettre à jour l'utilisateur
-        userCompagne.setCompagne(compagneOpt.get());  // Mettre à jour la compagne
+        userCompagne.setUser(user); // Mettre à jour l'utilisateur
+        userCompagne.setCompagne(compagneOpt.get()); // Mettre à jour la compagne
         userCompagne.setFonction(dto.getFonction());
         userCompagne.setCommentaire(dto.getCommentaire());
         userCompagne.setDateAffectation(dto.getDateAffectation());
         userCompagne.setDateFinAffectation(dto.getDateFinAffectation());
         userCompagne.setDateHeureFormation(dto.getDateHeureFormation());
-    
+
         // Sauvegarder les modifications dans la base de données
         return userCompagneRepository.save(userCompagne);
     }
-    
+
     @Transactional
     public UserCompagne assignUserToCompagne(Long userId, Long compagneId, Fonction fonction, String commentaire,
             LocalDate dateFinAffectation) {
@@ -149,57 +198,62 @@ public class UserService {
         userCompagne.setProjectLeader(projectLeader);
         return userCompagneRepository.save(userCompagne);
     }
-/* 
-    public List<User> getSupervisorsForProjectLeader(Long projectLeaderId) {
-        User projectLeader = userRepository.findById(projectLeaderId)
-                .orElseThrow(() -> new RuntimeException("Project Leader not found"));
-        return userCompagneRepository.findAllByProjectLeader(projectLeader).stream()
-                .filter(uc -> uc.getFonction() == Fonction.SUPERVISEUR).map(UserCompagne::getUser)
-                .distinct() // Ajout de .distinct() pour éliminer les doublons
-                .collect(Collectors.toList());
-    }
 
-    public List<User> getProjectLeadersForCompagne(Long compagneId) {
-        Compagne compagne = compagneRepository.findById(compagneId)
-                .orElseThrow(() -> new RuntimeException("Compagne not found"));
-        return userCompagneRepository.findAllByCompagne(compagne).stream()
-                .filter(uc -> uc.getFonction() == Fonction.CHEF_PROJET).map(UserCompagne::getUser)
-                .distinct() // Ajout de .distinct() pour éliminer les doublons
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getAgentsByProjectLeaderAndCompagne(Long projectLeaderId, Long compagneId) {
-        return userCompagneRepository.findAllByProjectLeader_IdUserAndCompagne_Id(projectLeaderId, compagneId).stream()
-                .filter(uc -> uc.getFonction() == Fonction.AGENT)
-                .map(UserCompagne::getUser)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getAgentsForSupervisor(Long supervisorId) {
-        User supervisor = userRepository.findById(supervisorId)
-                .orElseThrow(() -> new RuntimeException("Supervisor not found"));
-        return userCompagneRepository.findAllBySupervisor(supervisor).stream()
-                .filter(uc -> uc.getFonction() == Fonction.AGENT).map(UserCompagne::getUser)
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getAgentsByCompagne(Long compagneId) {
-        return userCompagneRepository.findAllByCompagne_Id(compagneId).stream()
-                .filter(uc -> uc.getFonction() == Fonction.AGENT)
-                .map(UserCompagne::getUser)
-                .distinct() // Ajout de .distinct() pour éliminer les doublons
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getSupervisorsByCompagne(Long compagneId) {
-        return userCompagneRepository.findAllByCompagne_Id(compagneId).stream()
-                .filter(uc -> uc.getFonction() == Fonction.SUPERVISEUR)
-                .map(UserCompagne::getUser)
-                .distinct() // Ajout de .distinct() pour éliminer les doublons
-                .collect(Collectors.toList());
-    }
-*/
+    /*
+     * public List<User> getSupervisorsForProjectLeader(Long projectLeaderId) {
+     * User projectLeader = userRepository.findById(projectLeaderId)
+     * .orElseThrow(() -> new RuntimeException("Project Leader not found"));
+     * return userCompagneRepository.findAllByProjectLeader(projectLeader).stream()
+     * .filter(uc -> uc.getFonction() ==
+     * Fonction.SUPERVISEUR).map(UserCompagne::getUser)
+     * .distinct() // Ajout de .distinct() pour éliminer les doublons
+     * .collect(Collectors.toList());
+     * }
+     * 
+     * public List<User> getProjectLeadersForCompagne(Long compagneId) {
+     * Compagne compagne = compagneRepository.findById(compagneId)
+     * .orElseThrow(() -> new RuntimeException("Compagne not found"));
+     * return userCompagneRepository.findAllByCompagne(compagne).stream()
+     * .filter(uc -> uc.getFonction() ==
+     * Fonction.CHEF_PROJET).map(UserCompagne::getUser)
+     * .distinct() // Ajout de .distinct() pour éliminer les doublons
+     * .collect(Collectors.toList());
+     * }
+     * 
+     * public List<User> getAgentsByProjectLeaderAndCompagne(Long projectLeaderId,
+     * Long compagneId) {
+     * return userCompagneRepository.findAllByProjectLeader_IdUserAndCompagne_Id(
+     * projectLeaderId, compagneId).stream()
+     * .filter(uc -> uc.getFonction() == Fonction.AGENT)
+     * .map(UserCompagne::getUser)
+     * .distinct()
+     * .collect(Collectors.toList());
+     * }
+     * 
+     * public List<User> getAgentsForSupervisor(Long supervisorId) {
+     * User supervisor = userRepository.findById(supervisorId)
+     * .orElseThrow(() -> new RuntimeException("Supervisor not found"));
+     * return userCompagneRepository.findAllBySupervisor(supervisor).stream()
+     * .filter(uc -> uc.getFonction() == Fonction.AGENT).map(UserCompagne::getUser)
+     * .collect(Collectors.toList());
+     * }
+     * 
+     * public List<User> getAgentsByCompagne(Long compagneId) {
+     * return userCompagneRepository.findAllByCompagne_Id(compagneId).stream()
+     * .filter(uc -> uc.getFonction() == Fonction.AGENT)
+     * .map(UserCompagne::getUser)
+     * .distinct() // Ajout de .distinct() pour éliminer les doublons
+     * .collect(Collectors.toList());
+     * }
+     * 
+     * public List<User> getSupervisorsByCompagne(Long compagneId) {
+     * return userCompagneRepository.findAllByCompagne_Id(compagneId).stream()
+     * .filter(uc -> uc.getFonction() == Fonction.SUPERVISEUR)
+     * .map(UserCompagne::getUser)
+     * .distinct() // Ajout de .distinct() pour éliminer les doublons
+     * .collect(Collectors.toList());
+     * }
+     */
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -333,25 +387,26 @@ public class UserService {
         userRepository.deleteById(idUser);
     }
 
-   /*  @Transactional
-    public void updateUserEtat(Long idUser, EtatUser nouvelEtat, String motif) {
-        User user = userRepository.findById(idUser)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
-        // Enregistrement dans EtatHistorique
-        MouvementHistorique etatHistorique = new MouvementHistorique();
-        etatHistorique.setEtat(nouvelEtat);
-        etatHistorique.setMotif(motif);
-        etatHistorique.setDateAction(LocalDate.now());
-        etatHistorique.setUser(user);
-
-        mouvementHistoriqueRepository.save(etatHistorique);
-
-        // Mise à jour de l'état actuel de l'utilisateur
-        user.setEtatActuel(nouvelEtat);
-        userRepository.save(user);
-    }
-*/
+    /*
+     * @Transactional
+     * public void updateUserEtat(Long idUser, EtatUser nouvelEtat, String motif) {
+     * User user = userRepository.findById(idUser)
+     * .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+     * 
+     * // Enregistrement dans EtatHistorique
+     * MouvementHistorique etatHistorique = new MouvementHistorique();
+     * etatHistorique.setEtat(nouvelEtat);
+     * etatHistorique.setMotif(motif);
+     * etatHistorique.setDateAction(LocalDate.now());
+     * etatHistorique.setUser(user);
+     * 
+     * mouvementHistoriqueRepository.save(etatHistorique);
+     * 
+     * // Mise à jour de l'état actuel de l'utilisateur
+     * user.setEtatActuel(nouvelEtat);
+     * userRepository.save(user);
+     * }
+     */
     public User addEnfantsToUser(Long userId, List<Enfant> enfants) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -393,18 +448,19 @@ public class UserService {
     }
 
     public List<UserCompagneDTO> getUsersWithSupervisorOrProjectLeader() {
-        // Récupérer les UserCompagnes où le superviseur ou le chef de projet est non nul
+        // Récupérer les UserCompagnes où le superviseur ou le chef de projet est non
+        // nul
         List<UserCompagne> userCompagnes = userCompagneRepository.findBySupervisorIsNotNullOrProjectLeaderIsNotNull();
         List<UserCompagneDTO> result = new ArrayList<>();
-    
+
         // Parcours des UserCompagnes pour enrichir chaque élément
         for (UserCompagne userCompagne : userCompagnes) {
             // Créer un DTO avec l'objet User déjà intégré
             User user = userCompagne.getUser(); // L'utilisateur lié à cette UserCompagne
-    
+
             UserCompagneDTO userCompagneDTO = new UserCompagneDTO();
             userCompagneDTO.setUser(user); // L'User complet est déjà dans le DTO
-    
+
             // Ajouter les informations de UserCompagne
             userCompagneDTO.setCompagneId(userCompagne.getCompagne().getId()); // ID de la campagne
             userCompagneDTO.setFonction(userCompagne.getFonction()); // Fonction de l'utilisateur dans la campagne
@@ -412,7 +468,7 @@ public class UserService {
             userCompagneDTO.setDateHeureFormation(userCompagne.getDateHeureFormation()); // Date et heure de formation
             userCompagneDTO.setDateAffectation(userCompagne.getDateAffectation()); // Date d'affectation
             userCompagneDTO.setDateFinAffectation(userCompagne.getDateFinAffectation()); // Date de fin d'affectation
-    
+
             // Supervisor et ProjectLeader sont optionnels, donc on vérifie si disponibles
             if (userCompagne.getSupervisor() != null) {
                 userCompagneDTO.setSupervisorId(userCompagne.getSupervisor().getIdUser()); // ID du superviseur
@@ -420,11 +476,11 @@ public class UserService {
             if (userCompagne.getProjectLeader() != null) {
                 userCompagneDTO.setProjectLeaderId(userCompagne.getProjectLeader().getIdUser()); // ID du chef de projet
             }
-    
+
             // Ajouter à la liste de résultats
             result.add(userCompagneDTO);
         }
-    
+
         return result; // Retourner la liste des UserCompagneDTO
     }
-    }
+}

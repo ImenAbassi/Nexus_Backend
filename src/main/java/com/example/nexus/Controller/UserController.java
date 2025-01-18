@@ -3,6 +3,7 @@ package com.example.nexus.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,34 +26,60 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-  
-    @PostMapping("/create-and-assign")
+ /*  @PostMapping("/create-and-assign")
     public ResponseEntity<UserCompagne> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
-        UserCompagne userCompagne = userService.createUserAndAssignToCompagne(dto.getUser(), dto.getCompagneId(),
-                dto.getFonction(), dto.getCommentaire(), dto.getDateAffectation(), dto.getDateFinAffectation(),dto.getDateHeureFormation());
+        UserCompagne userCompagne = userService.createUserAndAssignToCompagne(
+                dto.getUser(),
+                dto.getCompagneId(),
+                dto.getFonction(),
+                dto.getCommentaire(),
+                dto.getDateAffectation(),
+                dto.getDateFinAffectation(),
+                dto.getDateHeureFormation());
+        return ResponseEntity.ok(userCompagne);
+    }*/
+
+    @PostMapping("/create-and-assign")
+public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
+    try {
+        UserCompagne userCompagne = userService.createUserAndAssignToCompagne(
+                dto.getUser(),
+                dto.getCompagneId(),
+                dto.getFonction(),
+                dto.getCommentaire(),
+                dto.getDateAffectation(),
+                dto.getDateFinAffectation(),
+                dto.getDateHeureFormation()
+        );
+        return ResponseEntity.ok(userCompagne);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+}
+
+
+    // Contrôleur pour récupérer un UserCompagne par son ID
+    @GetMapping("/{userCompagneId}")
+    public ResponseEntity<UserCompagne> getUserCompagneById(@PathVariable Long userCompagneId) {
+        UserCompagne userCompagne = userService.findById(userCompagneId);
+        if (userCompagne == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(userCompagne);
     }
- // Contrôleur pour récupérer un UserCompagne par son ID
-@GetMapping("/{userCompagneId}")
-public ResponseEntity<UserCompagne> getUserCompagneById(@PathVariable Long userCompagneId) {
-    UserCompagne userCompagne = userService.findById(userCompagneId);
-    if (userCompagne == null) {
-        return ResponseEntity.notFound().build();
+
+    @PutMapping("/update/{userCompagneId}")
+    public ResponseEntity<UserCompagne> updateUserCompagne(@PathVariable Long userCompagneId,
+            @RequestBody UserCompagneDTO dto) {
+        // Appel au service pour mettre à jour l'enregistrement
+        UserCompagne updatedUserCompagne = userService.updateUserCompagne(userCompagneId, dto);
+
+        if (updatedUserCompagne == null) {
+            return ResponseEntity.notFound().build(); // Retourne 404 si l'élément n'existe pas
+        }
+
+        return ResponseEntity.ok(updatedUserCompagne); // Retourne l'objet mis à jour
     }
-    return ResponseEntity.ok(userCompagne);
-}
-
-@PutMapping("/update/{userCompagneId}")
-public ResponseEntity<UserCompagne> updateUserCompagne(@PathVariable Long userCompagneId, @RequestBody UserCompagneDTO dto) {
-    // Appel au service pour mettre à jour l'enregistrement
-    UserCompagne updatedUserCompagne = userService.updateUserCompagne(userCompagneId, dto);
-
-    if (updatedUserCompagne == null) {
-        return ResponseEntity.notFound().build();  // Retourne 404 si l'élément n'existe pas
-    }
-
-    return ResponseEntity.ok(updatedUserCompagne);  // Retourne l'objet mis à jour
-}
 
     @PostMapping("/assignToCompagne")
     public ResponseEntity<UserCompagne> assignUserToCompagne(@RequestBody UserCompagneDTO dto) {
@@ -78,50 +105,62 @@ public ResponseEntity<UserCompagne> updateUserCompagne(@PathVariable Long userCo
         List<UserCompagneDTO> userCompagnes = userService.getUsersWithoutSupervisorOrProjectLeader();
         return userCompagnes; // Renvoyer la liste des DTOs
     }
+
     @GetMapping("/users-with-supervisor-or-project-leader")
-public List<UserCompagneDTO> getUsersWithSupervisorOrProjectLeader() {
-    // Appeler le service pour récupérer les données enrichies
-    List<UserCompagneDTO> userCompagnes = userService.getUsersWithSupervisorOrProjectLeader();
-    return userCompagnes; // Renvoyer la liste des DTOs
-}
-/* 
-    @GetMapping("/projectLeader/{projectLeaderId}/supervisors")
-    public ResponseEntity<List<User>> getSupervisorsForProjectLeader(@PathVariable Long projectLeaderId) {
-        List<User> supervisors = userService.getSupervisorsForProjectLeader(projectLeaderId);
-        return ResponseEntity.ok(supervisors);
+    public List<UserCompagneDTO> getUsersWithSupervisorOrProjectLeader() {
+        // Appeler le service pour récupérer les données enrichies
+        List<UserCompagneDTO> userCompagnes = userService.getUsersWithSupervisorOrProjectLeader();
+        return userCompagnes; // Renvoyer la liste des DTOs
     }
 
-    @GetMapping("/compagne/{compagneId}/projectLeaders")
-    public ResponseEntity<List<User>> getProjectLeadersForCompagne(@PathVariable Long compagneId) {
-        List<User> projectLeaders = userService.getProjectLeadersForCompagne(compagneId);
-        return ResponseEntity.ok(projectLeaders);
-    }
-
-    @GetMapping("/supervisor/{supervisorId}/agents")
-    public ResponseEntity<List<User>> getAgentsForSupervisor(@PathVariable Long supervisorId) {
-        List<User> agents = userService.getAgentsForSupervisor(supervisorId);
-        return ResponseEntity.ok(agents);
-    }
-
-    @GetMapping("/compagne/{compagneId}/agents")
-    public ResponseEntity<List<User>> getAgentsByCompagne(@PathVariable Long compagneId) {
-        List<User> agents = userService.getAgentsByCompagne(compagneId);
-        return ResponseEntity.ok(agents);
-    }
-
-    @GetMapping("/compagne/{compagneId}/supervisors")
-    public ResponseEntity<List<User>> getSupervisorsByCompagne(@PathVariable Long compagneId) {
-        List<User> supervisors = userService.getSupervisorsByCompagne(compagneId);
-        return ResponseEntity.ok(supervisors);
-    }
-
-    @GetMapping("/projectLeader/{projectLeaderId}/compagne/{compagneId}/agents")
-    public ResponseEntity<List<User>> getAgentsByProjectLeaderAndCompagne(@PathVariable Long projectLeaderId,
-            @PathVariable Long compagneId) {
-        List<User> agents = userService.getAgentsByProjectLeaderAndCompagne(projectLeaderId, compagneId);
-        return ResponseEntity.ok(agents);
-    }
-*/
+    /*
+     * @GetMapping("/projectLeader/{projectLeaderId}/supervisors")
+     * public ResponseEntity<List<User>>
+     * getSupervisorsForProjectLeader(@PathVariable Long projectLeaderId) {
+     * List<User> supervisors =
+     * userService.getSupervisorsForProjectLeader(projectLeaderId);
+     * return ResponseEntity.ok(supervisors);
+     * }
+     * 
+     * @GetMapping("/compagne/{compagneId}/projectLeaders")
+     * public ResponseEntity<List<User>> getProjectLeadersForCompagne(@PathVariable
+     * Long compagneId) {
+     * List<User> projectLeaders =
+     * userService.getProjectLeadersForCompagne(compagneId);
+     * return ResponseEntity.ok(projectLeaders);
+     * }
+     * 
+     * @GetMapping("/supervisor/{supervisorId}/agents")
+     * public ResponseEntity<List<User>> getAgentsForSupervisor(@PathVariable Long
+     * supervisorId) {
+     * List<User> agents = userService.getAgentsForSupervisor(supervisorId);
+     * return ResponseEntity.ok(agents);
+     * }
+     * 
+     * @GetMapping("/compagne/{compagneId}/agents")
+     * public ResponseEntity<List<User>> getAgentsByCompagne(@PathVariable Long
+     * compagneId) {
+     * List<User> agents = userService.getAgentsByCompagne(compagneId);
+     * return ResponseEntity.ok(agents);
+     * }
+     * 
+     * @GetMapping("/compagne/{compagneId}/supervisors")
+     * public ResponseEntity<List<User>> getSupervisorsByCompagne(@PathVariable Long
+     * compagneId) {
+     * List<User> supervisors = userService.getSupervisorsByCompagne(compagneId);
+     * return ResponseEntity.ok(supervisors);
+     * }
+     * 
+     * @GetMapping("/projectLeader/{projectLeaderId}/compagne/{compagneId}/agents")
+     * public ResponseEntity<List<User>>
+     * getAgentsByProjectLeaderAndCompagne(@PathVariable Long projectLeaderId,
+     * 
+     * @PathVariable Long compagneId) {
+     * List<User> agents =
+     * userService.getAgentsByProjectLeaderAndCompagne(projectLeaderId, compagneId);
+     * return ResponseEntity.ok(agents);
+     * }
+     */
     @GetMapping("/{idUser}")
     public ResponseEntity<User> getUserById(@PathVariable Long idUser) {
         return userService.getUserById(idUser)
@@ -141,14 +180,17 @@ public List<UserCompagneDTO> getUsersWithSupervisorOrProjectLeader() {
         return ResponseEntity.noContent().build();
     }
 
-   /*  @PutMapping("/{idUser}/etat")
-    public ResponseEntity<Void> updateUserEtat(@PathVariable Long idUser,
-            @RequestParam EtatUser nouvelEtat,
-            @RequestParam String motif) {
-        userService.updateUserEtat(idUser, nouvelEtat, motif);
-        return ResponseEntity.ok().build();
-    }
-    */
+    /*
+     * @PutMapping("/{idUser}/etat")
+     * public ResponseEntity<Void> updateUserEtat(@PathVariable Long idUser,
+     * 
+     * @RequestParam EtatUser nouvelEtat,
+     * 
+     * @RequestParam String motif) {
+     * userService.updateUserEtat(idUser, nouvelEtat, motif);
+     * return ResponseEntity.ok().build();
+     * }
+     */
 
     @PostMapping("/{userId}/enfants")
     public ResponseEntity<User> addEnfantsToUser(@PathVariable Long userId, @RequestBody List<Enfant> enfants) {
