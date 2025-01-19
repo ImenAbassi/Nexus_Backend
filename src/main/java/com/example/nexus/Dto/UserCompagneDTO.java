@@ -18,16 +18,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserCompagneDTO {
-
+    private Long id;
     private Long userId;
     private User user;
     private Long compagneId;
     private Long supervisorId;
     private Long projectLeaderId;
-    private Fonction fonction;
+    private Long fonctionId;
     private String commentaire;
     private LocalDate dateAffectation;
     private LocalDate dateFinAffectation;
     private LocalDateTime dateHeureFormation; // Date et heure de formation
+    private Fonction fonction;
 
 }

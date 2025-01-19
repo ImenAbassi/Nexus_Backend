@@ -1,28 +1,35 @@
 package com.example.nexus.Controller;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.nexus.security.JwtTokenUtil;
 import com.example.nexus.security.LoginRequest;
 import com.example.nexus.security.UserDetailsServiceImpl;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:4200") // Ajouter CORS ici aussi
+@CrossOrigin(origins = "http://localhost:4200")
 public class LoginController {
 
     @Autowired
@@ -36,31 +43,34 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // Authenticate the user
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
+        try {
+            // Authenticate the user
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Generate JWT token
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtTokenUtil.generateToken(userDetails);
+            // Generate JWT token
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtTokenUtil.generateToken(userDetails);
 
-        // Return user and token
-        Map<String, Object> response = new HashMap<>();
-        response.put("user", userDetails);
-        response.put("token", token);
+            // Return user and token
+            Map<String, Object> response = new HashMap<>();
+            response.put("user", userDetails);
+            response.put("token", token);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
-        // Invalidate the token (optional, depends on your requirements)
         String token = jwtTokenUtil.extractToken(request);
         if (token != null) {
-            // You can add the token to a blacklist or perform other actions to invalidate it
+            jwtTokenUtil.validateToken(token); // Invalidate the token
         }
 
         SecurityContextHolder.clearContext();
@@ -91,5 +101,4 @@ public class LoginController {
             return ResponseEntity.badRequest().body("Invalid token");
         }
     }
-
 }

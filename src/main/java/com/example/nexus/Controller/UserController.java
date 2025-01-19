@@ -5,14 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.nexus.Dto.UserCompagneDTO;
 import com.example.nexus.Entitie.Enfant;
@@ -23,42 +16,28 @@ import com.example.nexus.Services.UserService;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
- /*  @PostMapping("/create-and-assign")
-    public ResponseEntity<UserCompagne> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
-        UserCompagne userCompagne = userService.createUserAndAssignToCompagne(
-                dto.getUser(),
-                dto.getCompagneId(),
-                dto.getFonction(),
-                dto.getCommentaire(),
-                dto.getDateAffectation(),
-                dto.getDateFinAffectation(),
-                dto.getDateHeureFormation());
-        return ResponseEntity.ok(userCompagne);
-    }*/
-
     @PostMapping("/create-and-assign")
-public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
-    try {
-        UserCompagne userCompagne = userService.createUserAndAssignToCompagne(
-                dto.getUser(),
-                dto.getCompagneId(),
-                dto.getFonction(),
-                dto.getCommentaire(),
-                dto.getDateAffectation(),
-                dto.getDateFinAffectation(),
-                dto.getDateHeureFormation()
-        );
-        return ResponseEntity.ok(userCompagne);
-    } catch (RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
+        try {
+            UserCompagne userCompagne = userService.createUserAndAssignToCompagne(
+                    dto.getUser(),
+                    dto.getCompagneId(),
+                    dto.getFonctionId(),
+                    dto.getCommentaire(),
+                    dto.getDateAffectation(),
+                    dto.getDateFinAffectation(),
+                    dto.getDateHeureFormation()
+            );
+            return ResponseEntity.ok(userCompagne);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
-}
 
-
-    // Contrôleur pour récupérer un UserCompagne par son ID
     @GetMapping("/{userCompagneId}")
     public ResponseEntity<UserCompagne> getUserCompagneById(@PathVariable Long userCompagneId) {
         UserCompagne userCompagne = userService.findById(userCompagneId);
@@ -70,21 +49,21 @@ public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagne
 
     @PutMapping("/update/{userCompagneId}")
     public ResponseEntity<UserCompagne> updateUserCompagne(@PathVariable Long userCompagneId,
-            @RequestBody UserCompagneDTO dto) {
-        // Appel au service pour mettre à jour l'enregistrement
+                                                           @RequestBody UserCompagneDTO dto) {
         UserCompagne updatedUserCompagne = userService.updateUserCompagne(userCompagneId, dto);
-
-        if (updatedUserCompagne == null) {
-            return ResponseEntity.notFound().build(); // Retourne 404 si l'élément n'existe pas
-        }
-
-        return ResponseEntity.ok(updatedUserCompagne); // Retourne l'objet mis à jour
+      
+        return ResponseEntity.ok(updatedUserCompagne);
     }
 
     @PostMapping("/assignToCompagne")
     public ResponseEntity<UserCompagne> assignUserToCompagne(@RequestBody UserCompagneDTO dto) {
-        UserCompagne userCompagne = userService.assignUserToCompagne(dto.getUserId(), dto.getCompagneId(),
-                dto.getFonction(), dto.getCommentaire(), dto.getDateFinAffectation());
+        UserCompagne userCompagne = userService.assignUserToCompagne(
+                dto.getUserId(),
+                dto.getCompagneId(),
+                dto.getFonctionId(),
+                dto.getCommentaire(),
+                dto.getDateFinAffectation()
+        );
         return ResponseEntity.ok(userCompagne);
     }
 
@@ -101,66 +80,14 @@ public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagne
 
     @GetMapping("/users-without-supervisor-or-project-leader")
     public List<UserCompagneDTO> getUsersWithoutSupervisorOrProjectLeader() {
-        // Appeler le service pour récupérer les données enrichies
-        List<UserCompagneDTO> userCompagnes = userService.getUsersWithoutSupervisorOrProjectLeader();
-        return userCompagnes; // Renvoyer la liste des DTOs
+        return userService.getUsersWithoutSupervisorOrProjectLeader();
     }
 
     @GetMapping("/users-with-supervisor-or-project-leader")
     public List<UserCompagneDTO> getUsersWithSupervisorOrProjectLeader() {
-        // Appeler le service pour récupérer les données enrichies
-        List<UserCompagneDTO> userCompagnes = userService.getUsersWithSupervisorOrProjectLeader();
-        return userCompagnes; // Renvoyer la liste des DTOs
+        return userService.getUsersWithSupervisorOrProjectLeader();
     }
 
-    /*
-     * @GetMapping("/projectLeader/{projectLeaderId}/supervisors")
-     * public ResponseEntity<List<User>>
-     * getSupervisorsForProjectLeader(@PathVariable Long projectLeaderId) {
-     * List<User> supervisors =
-     * userService.getSupervisorsForProjectLeader(projectLeaderId);
-     * return ResponseEntity.ok(supervisors);
-     * }
-     * 
-     * @GetMapping("/compagne/{compagneId}/projectLeaders")
-     * public ResponseEntity<List<User>> getProjectLeadersForCompagne(@PathVariable
-     * Long compagneId) {
-     * List<User> projectLeaders =
-     * userService.getProjectLeadersForCompagne(compagneId);
-     * return ResponseEntity.ok(projectLeaders);
-     * }
-     * 
-     * @GetMapping("/supervisor/{supervisorId}/agents")
-     * public ResponseEntity<List<User>> getAgentsForSupervisor(@PathVariable Long
-     * supervisorId) {
-     * List<User> agents = userService.getAgentsForSupervisor(supervisorId);
-     * return ResponseEntity.ok(agents);
-     * }
-     * 
-     * @GetMapping("/compagne/{compagneId}/agents")
-     * public ResponseEntity<List<User>> getAgentsByCompagne(@PathVariable Long
-     * compagneId) {
-     * List<User> agents = userService.getAgentsByCompagne(compagneId);
-     * return ResponseEntity.ok(agents);
-     * }
-     * 
-     * @GetMapping("/compagne/{compagneId}/supervisors")
-     * public ResponseEntity<List<User>> getSupervisorsByCompagne(@PathVariable Long
-     * compagneId) {
-     * List<User> supervisors = userService.getSupervisorsByCompagne(compagneId);
-     * return ResponseEntity.ok(supervisors);
-     * }
-     * 
-     * @GetMapping("/projectLeader/{projectLeaderId}/compagne/{compagneId}/agents")
-     * public ResponseEntity<List<User>>
-     * getAgentsByProjectLeaderAndCompagne(@PathVariable Long projectLeaderId,
-     * 
-     * @PathVariable Long compagneId) {
-     * List<User> agents =
-     * userService.getAgentsByProjectLeaderAndCompagne(projectLeaderId, compagneId);
-     * return ResponseEntity.ok(agents);
-     * }
-     */
     @GetMapping("/{idUser}")
     public ResponseEntity<User> getUserById(@PathVariable Long idUser) {
         return userService.getUserById(idUser)
@@ -180,18 +107,6 @@ public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagne
         return ResponseEntity.noContent().build();
     }
 
-    /*
-     * @PutMapping("/{idUser}/etat")
-     * public ResponseEntity<Void> updateUserEtat(@PathVariable Long idUser,
-     * 
-     * @RequestParam EtatUser nouvelEtat,
-     * 
-     * @RequestParam String motif) {
-     * userService.updateUserEtat(idUser, nouvelEtat, motif);
-     * return ResponseEntity.ok().build();
-     * }
-     */
-
     @PostMapping("/{userId}/enfants")
     public ResponseEntity<User> addEnfantsToUser(@PathVariable Long userId, @RequestBody List<Enfant> enfants) {
         User updatedUser = userService.addEnfantsToUser(userId, enfants);
@@ -202,7 +117,6 @@ public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagne
     public ResponseEntity<User> assignUserToSociete(
             @PathVariable Long userId,
             @PathVariable Long societeId) {
-
         User updatedUser = userService.assignUserToSociete(userId, societeId);
         return ResponseEntity.ok(updatedUser);
     }
