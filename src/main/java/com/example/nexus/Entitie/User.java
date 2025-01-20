@@ -139,7 +139,6 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
-
     private List<UserCompagne> userCompagnes;
 
     @OneToMany(mappedBy = "utilisateur")
