@@ -3,6 +3,7 @@ package com.example.nexus.Entitie;
 
 import java.time.LocalDate;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AttestationTravail {
+public class AttestationTravail extends BaseEntity  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,8 +48,7 @@ public class AttestationTravail {
     private String reference;
 
     @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "utilisateur_id") 
+    @JoinColumn(name = "utilisateur_idUser") 
     private User utilisateur;
 
 }

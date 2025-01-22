@@ -3,8 +3,8 @@ package com.example.nexus.Entitie;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +21,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserCompagne {
+public class UserCompagne extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,4 +52,8 @@ public class UserCompagne {
     @ManyToOne
     @JoinColumn(name = "project_leader_id", nullable = true)
     private User projectLeader; // Ajout du chef de projet
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = true) // Ajout du rôle
+    private Role role;
 }

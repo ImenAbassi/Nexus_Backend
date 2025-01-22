@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -28,7 +29,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,9 +53,8 @@ public class User {
     private EtatUser etatActuel;
     */
     @OneToMany(mappedBy = "user")
-    private List<EtatUser> etatsUser; // Un utilisateur peut avoir plusieurs états
-
-
+    private List<EtatUser> etatsUser; 
+    
     @Column(columnDefinition = "DATE")
     private LocalDate dateNaissance;
 

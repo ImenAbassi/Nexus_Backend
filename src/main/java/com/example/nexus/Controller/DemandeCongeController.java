@@ -1,6 +1,8 @@
 package com.example.nexus.Controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,22 +50,39 @@ public class DemandeCongeController {
     }
 
     @PostMapping("/validerSuperviseur/{id}")
-    public ResponseEntity<String> validerParSuperviseur(@PathVariable Long id, @RequestBody EtatDemande etat) {
+    public ResponseEntity<Map<String, String>> validerParSuperviseur(
+            @PathVariable Long id) { // Utilisez le DTO
         try {
-            demandeCongeService.validerParSuperviseur(id, etat);
-            return ResponseEntity.ok("Demande validée par le superviseur");
+            demandeCongeService.validerParSuperviseur(id, EtatDemande.APPROUVEE);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur : " + EtatDemande.APPROUVEE);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + EtatDemande.APPROUVEE);
+            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
-    @PostMapping("/validerChefProjet/{id}")
-    public ResponseEntity<String> validerParChefProjet(@PathVariable Long id, @RequestBody EtatDemande etat) {
+     @PostMapping("/validerChefProjet/{id}")
+    public ResponseEntity<Map<String, String>> validerParChefProjet(@PathVariable Long id) {
         try {
-            demandeCongeService.validerParChefProjet(id, etat);
-            return ResponseEntity.ok("Demande validée par le chef de projet");
+            demandeCongeService.validerParChefProjet(id, EtatDemande.APPROUVEE);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur : " + EtatDemande.APPROUVEE);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + EtatDemande.APPROUVEE);
+            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

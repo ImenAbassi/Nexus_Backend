@@ -2,6 +2,7 @@ package com.example.nexus.Entitie;
 
 import java.util.List;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -25,7 +26,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Compagne {
+public class Compagne extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,8 +78,5 @@ public class Compagne {
     @JsonIgnore
     private List<UserCompagne> userCompagnes;
 
-
-    
-    ///// dernier update////
 
 }

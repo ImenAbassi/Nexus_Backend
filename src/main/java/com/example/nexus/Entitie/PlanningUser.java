@@ -3,6 +3,8 @@ package com.example.nexus.Entitie;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +21,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlanningUser {
+public class PlanningUser extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

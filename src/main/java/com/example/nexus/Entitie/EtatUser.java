@@ -4,6 +4,8 @@ package com.example.nexus.Entitie;
 
 import java.time.LocalDate;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,7 +22,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EtatUser {
+public class EtatUser extends BaseEntity  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

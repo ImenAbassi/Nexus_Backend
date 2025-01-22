@@ -3,6 +3,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +26,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AutorisationSortie {
+public class AutorisationSortie extends BaseEntity  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,12 +45,8 @@ public class AutorisationSortie {
 
     private int nbreHeure;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User utilisateur;
-    
-    @ManyToOne
-    @JoinColumn(name = "compagne_id", nullable = false)
-    private Compagne compagne;
     
     @Enumerated(EnumType.STRING)
     private EtatDemande etatSuperviseur = EtatDemande.EN_ATTENTE;
@@ -62,7 +60,7 @@ public class AutorisationSortie {
 
     private String raison;
 
-    @OneToMany(mappedBy = "autorisationSortie", cascade = CascadeType.ALL)
+ /*   @OneToMany(mappedBy = "autorisationSortie", cascade = CascadeType.ALL)
     private List<ValidationHistorique> historique = new ArrayList<>();
     
     // Méthodes de validation
@@ -88,5 +86,5 @@ public class AutorisationSortie {
         vh.setEtat(etat);
         vh.setDateValidation(LocalDate.now());
         historique.add(vh);
-    }
+    }*/ 
 }

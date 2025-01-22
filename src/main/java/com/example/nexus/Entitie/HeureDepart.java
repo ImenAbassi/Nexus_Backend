@@ -9,12 +9,14 @@ import lombok.Setter;
 
 import java.time.LocalTime;
 
+import com.example.nexus.Entitie.inhertance.BaseEntity;
+
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class HeureDepart {
+public class HeureDepart extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
