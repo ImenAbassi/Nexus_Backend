@@ -1,6 +1,8 @@
 package com.example.nexus.Controller;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.nexus.Entitie.Pointage;
+import com.example.nexus.Entitie.PointageOperation;
 import com.example.nexus.Entitie.User;
+import com.example.nexus.Repository.PointageOperationRepository;
+import com.example.nexus.Repository.PointageRepository;
 import com.example.nexus.Repository.UserRepository;
 import com.example.nexus.Services.UserService;
 import com.example.nexus.security.JwtTokenUtil;
@@ -48,6 +54,12 @@ public class LoginController {
     @Autowired
     private UserRepository userRepository;
 
+     @Autowired
+    private PointageRepository pointageRepository;
+
+    @Autowired
+    private PointageOperationRepository pointageOperationRepository;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
@@ -63,7 +75,7 @@ public class LoginController {
             String token = jwtTokenUtil.generateToken(userDetails);
              User user = userRepository.findByCin(loginRequest.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + loginRequest.getUsername()));
-
+                handleLoginPointage(user);
             // Return user and token
             Map<String, Object> response = new HashMap<>();
             response.put("user", user);
@@ -81,7 +93,12 @@ public class LoginController {
         if (token != null) {
             jwtTokenUtil.validateToken(token); // Invalidate the token
         }
-
+         // Récupérer l'utilisateur via le token
+         String username = jwtTokenUtil.extractUsername(token);
+         User user = userRepository.findByCin(username)
+             .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+ 
+        handleLogoutPointage(user);
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logged out successfully");
     }
@@ -109,5 +126,43 @@ public class LoginController {
         } else {
             return ResponseEntity.badRequest().body("Invalid token");
         }
+    }
+
+    public void handleLoginPointage(User user) {
+        LocalDate today = LocalDate.now();
+        Pointage pointage = pointageRepository.findByUserAndDatePointage(user, today)
+            .orElseGet(() -> createNewPointage(user, today));
+
+            addPointageOperation(pointage, "ENTREE");
+        
+    }
+
+    public void handleLogoutPointage(User user) {
+        LocalDate today = LocalDate.now();
+        Pointage pointage = pointageRepository.findByUserAndDatePointage(user, today).orElse(null);
+
+        if (pointage != null) {
+            // Ajouter une opération de sortie
+            addPointageOperation(pointage, "SORTIE");
+            // Recalculer les heures travaillées
+            pointage.calculerHeuresTravaillees();
+            pointageRepository.save(pointage);
+        }
+    }
+
+    private Pointage createNewPointage(User user, LocalDate date) {
+        Pointage pointage = new Pointage();
+        pointage.setUser(user);
+        pointage.setDatePointage(date);
+        pointage.setHeuresTravaillees(0L);
+        return pointageRepository.save(pointage);
+    }
+
+    private void addPointageOperation(Pointage pointage, String type) {
+        PointageOperation operation = new PointageOperation();
+        operation.setPointage(pointage);
+        operation.setHeure(LocalDateTime.now());
+        operation.setType(type);
+        pointageOperationRepository.save(operation);
     }
 }

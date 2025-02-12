@@ -1,17 +1,16 @@
 package com.example.nexus.Services;
 
-import java.time.LocalDate;
-
+import com.example.nexus.Entitie.EtatDemande;
+import com.example.nexus.Entitie.Taxi;
+import com.example.nexus.Entitie.User;
+import com.example.nexus.Repository.TaxiRepository;
+import com.example.nexus.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.nexus.Entitie.EtatDemande;
-import com.example.nexus.Entitie.HeureDepart;
-import com.example.nexus.Entitie.Taxi;
-import com.example.nexus.Entitie.User;
-import com.example.nexus.Repository.HeureDepartRepository;
-import com.example.nexus.Repository.TaxiRepository;
-import com.example.nexus.Repository.UserRepository;
+import java.time.LocalDate;
+import java.util.List;
+
 @Service
 public class TaxiService {
 
@@ -21,36 +20,47 @@ public class TaxiService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private HeureDepartRepository heureDepartRepository; // Ajout du repository
-
-    public Taxi demanderTaxi(Long userId, Long heureDepartId) {
+    // Créer une demande de taxi
+    public Taxi demanderTaxi(Long userId, String localisationArrivee, String heureDepart) {
         User utilisateur = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        HeureDepart heureDepart = heureDepartRepository.findById(heureDepartId)
-                .orElseThrow(() -> new RuntimeException("Heure de départ non trouvée"));
-
         Taxi taxi = new Taxi();
         taxi.setUser(utilisateur);
-        taxi.setHeureDepart(heureDepart); // Référence à l'heure de départ
+        taxi.setLocalisationArrivee(localisationArrivee);
+        taxi.setHeureDepart(heureDepart);
         taxi.setEtatDemande(EtatDemande.EN_ATTENTE); // État par défaut
-        taxi.setDateCreation(LocalDate.now()); // Affecter la date système
+        taxi.setDateCreation(LocalDate.now()); // Date de création
 
         return taxiRepository.save(taxi);
     }
-      // Trouver une autorisation par ID
-      public Taxi trouverParId(Long id) {
+
+    // Récupérer toutes les demandes de taxi
+    public List<Taxi> obtenirTousLesTaxis() {
+        return taxiRepository.findAll();
+    }
+
+    // Récupérer une demande de taxi par son ID
+    public Taxi obtenirTaxiParId(Long id) {
         return taxiRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Taxi non trouvée"));
+                .orElseThrow(() -> new RuntimeException("Taxi non trouvé"));
     }
 
- public Taxi changerEtat(Long id, EtatDemande etat) {
-    Taxi autorisation = trouverParId(id);
-        autorisation.setEtatDemande(etat);
-        return taxiRepository.save(autorisation);
+    // Récupérer les demandes de taxi par utilisateur
+    public List<Taxi> obtenirTaxisParUtilisateur(Long userId) {
+        return taxiRepository.findByUserIdUser(userId);
     }
 
-    
+    // Mettre à jour l'état d'une demande de taxi
+    public Taxi changerEtatTaxi(Long id, EtatDemande etat) {
+        Taxi taxi = obtenirTaxiParId(id);
+        taxi.setEtatDemande(etat);
+        return taxiRepository.save(taxi);
+    }
 
+    // Supprimer une demande de taxi
+    public void supprimerTaxi(Long id) {
+        Taxi taxi = obtenirTaxiParId(id);
+        taxiRepository.delete(taxi);
+    }
 }

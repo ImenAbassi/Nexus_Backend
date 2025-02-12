@@ -1,12 +1,13 @@
 package com.example.nexus.Entitie;
 
-import java.time.LocalDate; // Importer LocalDate
+import java.time.LocalDate;
 
 import com.example.nexus.Entitie.inhertance.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 @Entity
 @Getter
 @Setter
@@ -17,17 +18,20 @@ public class Taxi extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "heure_depart_id", nullable = false)
-    private HeureDepart heureDepart; // Référence à l'heure de départ
+    @Column(nullable = false)
+    private String localisationArrivee; // Localisation d'arrivée
+
+    @Column(name = "heure_depart")
+    private String heureDepart; // Heure de départ
+
 
     @Enumerated(EnumType.STRING)
     private EtatDemande etatDemande;
+
     @Column(nullable = false)
-    private LocalDate dateCreation; // Ajout du champ dateCreation
+    private LocalDate dateCreation; // Date de création de la demande
+
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user; // Utilisateur qui a fait la demande
 }

@@ -12,8 +12,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @SuppressWarnings("null")
     Optional<User> findById(Long userId);
-    Optional<User> findByAdresseMail(String adresseMail); // Ajout de la méthode pour rechercher par adresse e-mail
-    Optional<User> findByCin(String cin); // Méthode pour trouver un utilisateur par CIN
-   /*  Optional<User> findById(User userId);*/
 
+    Optional<User> findByAdresseMail(String adresseMail); // Ajout de la méthode pour rechercher par adresse e-mail
+
+    Optional<User> findByCin(String cin); // Méthode pour trouver un utilisateur par CIN
+    /* Optional<User> findById(User userId); */
+
+    Optional<User> findByNom(String nom);
 }
