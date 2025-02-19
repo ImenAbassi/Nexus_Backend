@@ -1,6 +1,8 @@
 package com.example.nexus.Dto;
 
 import java.time.LocalDate;
+import java.util.List;
+
 
 public class PointageDTO {
 
@@ -14,7 +16,7 @@ public class PointageDTO {
 
     private Long heuresTravaillees;
 
-
+private List<PointageOperationDTO> operations;
 
     
 
@@ -59,7 +61,20 @@ public class PointageDTO {
 
     public void setHeuresTravaillees(Long heuresTravaillees) {
         this.heuresTravaillees = heuresTravaillees;
+    }
+
+
+    public List<PointageOperationDTO> getOperations() {
+        return operations;
+    }
+
+
+    public void setOperations(List<PointageOperationDTO> operations) {
+        this.operations = operations;
     } 
+
+
+    
 
     
 }

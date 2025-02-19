@@ -75,7 +75,7 @@ public class LoginController {
             String token = jwtTokenUtil.generateToken(userDetails);
              User user = userRepository.findByCin(loginRequest.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + loginRequest.getUsername()));
-                handleLoginPointage(user);
+             //  handleLoginPointage(user);
             // Return user and token
             Map<String, Object> response = new HashMap<>();
             response.put("user", user);
@@ -98,7 +98,7 @@ public class LoginController {
          User user = userRepository.findByCin(username)
              .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
  
-        handleLogoutPointage(user);
+        //handleLogoutPointage(user);
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logged out successfully");
     }
