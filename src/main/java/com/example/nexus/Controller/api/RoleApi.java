@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.nexus.Dto.RoleDTO;
+import com.example.nexus.Entitie.Privilege;
 
 @CrossOrigin(origins = "*") 
 @RequestMapping("/role")
@@ -32,5 +33,17 @@ public interface RoleApi {
 
 	@GetMapping("/getAll")
 	ResponseEntity<List<RoleDTO>> getAll();
+
+	    // Récupérer les privilèges d'un rôle
+		@GetMapping("/{roleId}/privileges")
+		ResponseEntity<List<Privilege>> getRolePrivileges(@PathVariable Long roleId);
+	
+		// Ajouter un privilège à un rôle
+		@PostMapping("/{roleId}/addPrivilege/{privilegeId}")
+		ResponseEntity<Void> addPrivilegeToRole(@PathVariable Long roleId, @PathVariable Long privilegeId);
+	
+		// Supprimer un privilège d'un rôle
+		@DeleteMapping("/{roleId}/removePrivilege/{privilegeId}")
+		ResponseEntity<Void> removePrivilegeFromRole(@PathVariable Long roleId, @PathVariable Long privilegeId);
 
 }

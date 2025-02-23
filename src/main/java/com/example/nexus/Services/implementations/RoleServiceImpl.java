@@ -3,7 +3,9 @@ package com.example.nexus.Services.implementations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.nexus.Entitie.Privilege;
 import com.example.nexus.Entitie.Role;
+import com.example.nexus.Repository.PrivilegeRepository;
 import com.example.nexus.Repository.RoleRepository;
 import com.example.nexus.Services.interfaces.RoleService;
 
@@ -21,6 +23,9 @@ public class RoleServiceImpl implements RoleService {
 
 	@Autowired
 	private RoleRepository roleRepository;
+
+	@Autowired
+    private PrivilegeRepository privilegeRepository;
 
 	private String getCurrentUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -66,8 +71,29 @@ public class RoleServiceImpl implements RoleService {
 		}
 	}
 
-	
+	@Override
+	public List<Privilege> getRolePrivileges(Long roleId) {
+		Role role = roleRepository.findById(roleId)
+				.orElseThrow(() -> new RuntimeException("Rôle non trouvé"));
+		return role.getPrivileges();
+	}
 
-	
+	@Override
+	public void addPrivilegeToRole(Long roleId, Long privilegeId) {
+		Role role = roleRepository.findById(roleId)
+				.orElseThrow(() -> new RuntimeException("Rôle non trouvé"));
+		Privilege privilege = privilegeRepository.findById(privilegeId)
+				.orElseThrow(() -> new RuntimeException("Privilège non trouvé"));
+		role.getPrivileges().add(privilege);
+		roleRepository.save(role);
+	}
+
+	@Override
+	public void removePrivilegeFromRole(Long roleId, Long privilegeId) {
+		Role role = roleRepository.findById(roleId)
+				.orElseThrow(() -> new RuntimeException("Rôle non trouvé"));
+		role.getPrivileges().removeIf(p -> p.getId().equals(privilegeId));
+		roleRepository.save(role);
+	}
 
 }

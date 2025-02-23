@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.nexus.Controller.api.RoleApi;
 import com.example.nexus.Dto.RoleDTO;
+import com.example.nexus.Entitie.Privilege;
 import com.example.nexus.Entitie.Role;
 import com.example.nexus.Services.interfaces.RoleService;
 import com.example.nexus.mapper.ObjectMapper;
@@ -45,5 +46,26 @@ public class RoleController implements RoleApi {
 	public ResponseEntity<List<RoleDTO>> getAll() {
 		return new ResponseEntity<>(ObjectMapper.mapAll(roleService.findAll(), RoleDTO.class), HttpStatus.OK);
 	}
+
+    // Récupérer les privilèges d'un rôle
+    @Override
+    public ResponseEntity<List<Privilege>> getRolePrivileges(Long roleId) {
+        List<Privilege> privileges = roleService.getRolePrivileges(roleId);
+        return new ResponseEntity<>(privileges, HttpStatus.OK);
+    }
+
+    // Ajouter un privilège à un rôle
+    @Override
+    public ResponseEntity<Void> addPrivilegeToRole(Long roleId, Long privilegeId) {
+        roleService.addPrivilegeToRole(roleId, privilegeId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    // Supprimer un privilège d'un rôle
+    @Override
+    public ResponseEntity<Void> removePrivilegeFromRole(Long roleId, Long privilegeId) {
+        roleService.removePrivilegeFromRole(roleId, privilegeId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 }

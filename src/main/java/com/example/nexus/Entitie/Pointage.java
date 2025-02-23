@@ -1,12 +1,6 @@
 package com.example.nexus.Entitie;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-
 import com.example.nexus.Entitie.inhertance.BaseEntity;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import lombok.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
 
 @Entity
 @Getter
@@ -25,7 +28,7 @@ import lombok.*;
 @NoArgsConstructor
 public class Pointage extends BaseEntity {
 
-   
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -53,17 +56,17 @@ public class Pointage extends BaseEntity {
             this.heuresTravaillees = 0L;
             return;
         }
-    
+
         long totalMinutes = 0;
         PointageOperation lastEntree = null;
         boolean erreurPointage = false;
-    
+
         // Trier les opérations par heure croissante
         operations.sort(Comparator.comparing(PointageOperation::getHeure));
-    
+
         for (PointageOperation operation : operations) {
             System.out.println("Opération : " + operation.getType() + " à " + operation.getHeure());
-    
+
             if ("ENTREE".equals(operation.getType())) {
                 if (lastEntree != null) {
                     // Il y a déjà une entrée en attente sans sortie -> Erreur de pointage
@@ -83,14 +86,14 @@ public class Pointage extends BaseEntity {
                 }
             }
         }
-    
+
         // Vérifier si une entrée est restée sans sortie
         if (lastEntree != null) {
             erreurPointage = true;
         }
-    
+
         this.heuresTravaillees = totalMinutes;
-    
+
         // Déclencher une alerte pour demander la correction du pointage si nécessaire
         if (erreurPointage) {
             System.out.println("⚠️ Erreur de pointage détectée pour l'utilisateur " + user.getNom() + ". Veuillez corriger les entrées/sorties incohérentes.");

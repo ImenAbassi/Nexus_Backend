@@ -1,6 +1,10 @@
 package com.example.nexus.Dto;
 
 
+import java.util.List;
+
+import com.example.nexus.Entitie.Privilege;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +17,7 @@ public class RoleDTO  {
 	private Long id;
 	private String name;
 	private String description;
+	private List<Privilege> privileges;
 
 	public RoleDTO() {}
 
