@@ -137,7 +137,7 @@ public class User extends BaseEntity {
     @JsonIgnore
     private List<DemandeConge> demandesConge = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<UserCompagne> userCompagnes;
 

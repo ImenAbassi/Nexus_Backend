@@ -3,15 +3,17 @@ package com.example.nexus.Services;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.nexus.Entitie.AutorisationSortie;
 import com.example.nexus.Entitie.EtatDemande;
+import com.example.nexus.Entitie.User;
+import com.example.nexus.Entitie.UserCompagne;
 import com.example.nexus.Entitie.ValidationHistorique;
 import com.example.nexus.Repository.AutorisationSortieRepository;
+import com.example.nexus.Repository.UserCompagneRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -20,6 +22,8 @@ public class AutorisationSortieService {
 
     @Autowired
     private AutorisationSortieRepository autorisationSortieRepository;
+    @Autowired
+    private UserCompagneRepository userCompagneRepository;
 
     // Créer une nouvelle autorisation de sortie
     @Transactional
@@ -121,4 +125,49 @@ public class AutorisationSortieService {
         return autorisationSortieRepository.findByEtatSuperviseurOrEtatChefProjetOrEtatRH(
                 EtatDemande.REJETEE, EtatDemande.REJETEE, EtatDemande.REJETEE);
     }
+
+    // Récupérer toutes les autorisations de sortie pour un utilisateur spécifique
+    public List<AutorisationSortie> getAutorisationsByUser(User utilisateur) {
+        return autorisationSortieRepository.findByUtilisateur(utilisateur);
+    }
+
+    // Récupérer toutes les autorisations de sortie pour un superviseur spécifique
+    public List<AutorisationSortie> getAutorisationsForSupervisor(User supervisor) {
+      // Step 1: Find all UserCompagne records where the supervisor is the given user
+      List<UserCompagne> userCompagnes = userCompagneRepository.findBySupervisor(supervisor);
+
+      // Step 2: Extract the users from the UserCompagne records
+      List<User> supervisedUsers = new ArrayList<>();
+      for (UserCompagne userCompagne : userCompagnes) {
+          supervisedUsers.add(userCompagne.getUser());
+      }
+
+      // Step 3: Fetch all AutorisationSortie records for the supervised users
+      List<AutorisationSortie> demandes = new ArrayList<>();
+      for (User user : supervisedUsers) {
+          demandes.addAll(autorisationSortieRepository.findByUtilisateur(user));
+      }
+
+      return demandes; 
+      
+    }
+
+    // Récupérer toutes les autorisations de sortie pour un chef de projet spécifique
+    public List<AutorisationSortie> getAutorisationsForProjectLeader(User projectLeader) {
+       // Step 1: Find all UserCompagne records where the project leader is the given user
+       List<UserCompagne> userCompagnes = userCompagneRepository.findByProjectLeader(projectLeader);
+
+       // Step 2: Extract the users from the UserCompagne records
+       List<User> projectUsers = new ArrayList<>();
+       for (UserCompagne userCompagne : userCompagnes) {
+           projectUsers.add(userCompagne.getUser());
+       }
+
+       // Step 3: Fetch all AutorisationSortie records for the project users
+       List<AutorisationSortie> demandes = new ArrayList<>();
+       for (User user : projectUsers) {
+           demandes.addAll(autorisationSortieRepository.findByUtilisateur(user));
+       }
+
+       return demandes;    }
 }

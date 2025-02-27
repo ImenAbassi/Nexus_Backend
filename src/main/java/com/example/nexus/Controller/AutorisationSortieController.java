@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.nexus.Dto.ValidationRequest;
 import com.example.nexus.Entitie.AutorisationSortie;
 import com.example.nexus.Entitie.EtatDemande;
+import com.example.nexus.Entitie.User;
 import com.example.nexus.Entitie.ValidationHistorique;
 import com.example.nexus.Services.AutorisationSortieService;
 
@@ -35,8 +36,8 @@ public class AutorisationSortieController {
         return ResponseEntity.ok(nouvelleAutorisation);
     }
 
-    @PostMapping("/validerSuperviseur/{id}")
-    public ResponseEntity<Map<String, String>> validerParSuperviseur(
+    @PostMapping("/validerSuperviseurs/{id}")
+    public ResponseEntity<Map<String, String>> validerParSuperviseurs(
             @PathVariable Long id) { // Utilisez le DTO
         try {
             autorisationSortieService.validerParSuperviseur(id, EtatDemande.APPROUVEE);
@@ -55,8 +56,8 @@ public class AutorisationSortieController {
     }
 
     // Valider par le chef de projet
-    @PostMapping("/validerChefProjet/{id}")
-    public ResponseEntity<Map<String, String>> validerParChefProjet(@PathVariable Long id) {
+    @PostMapping("/validerChefProjets/{id}")
+    public ResponseEntity<Map<String, String>> validerParChefProjets(@PathVariable Long id) {
         try {
             autorisationSortieService.validerParChefProjet(id, EtatDemande.APPROUVEE);
             Map<String, String> response = new HashMap<>();
@@ -74,8 +75,8 @@ public class AutorisationSortieController {
     }
 
     // Valider par les RH
-    @PostMapping("/validerRH/{id}")
-    public ResponseEntity<Map<String, String>> validerParRH(@PathVariable Long id) {
+    @PostMapping("/validerRHs/{id}")
+    public ResponseEntity<Map<String, String>> validerParRHs(@PathVariable Long id) {
         try {
             autorisationSortieService.validerParRH(id, EtatDemande.APPROUVEE);
             Map<String, String> response = new HashMap<>();
@@ -167,4 +168,94 @@ public class AutorisationSortieController {
         List<AutorisationSortie> autorisations = autorisationSortieService.getAutorisationsRefusees();
         return ResponseEntity.ok(autorisations);
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<AutorisationSortie>> getAutorisationsByUser(@PathVariable Long userId) {
+        User utilisateur = new User();
+        utilisateur.setIdUser(userId);
+
+        List<AutorisationSortie> autorisations = autorisationSortieService.getAutorisationsByUser(utilisateur);
+        return ResponseEntity.ok(autorisations);
+    }
+
+    // Récupérer toutes les autorisations de sortie pour un superviseur spécifique
+    @GetMapping("/superviseur/{supervisorId}")
+    public ResponseEntity<List<AutorisationSortie>> getAutorisationsForSupervisor(@PathVariable Long supervisorId) {
+        User supervisor = new User();
+        supervisor.setIdUser(supervisorId);
+
+        List<AutorisationSortie> autorisations = autorisationSortieService.getAutorisationsForSupervisor(supervisor);
+        return ResponseEntity.ok(autorisations);
+    }
+
+    // Récupérer toutes les autorisations de sortie pour un chef de projet spécifique
+    @GetMapping("/chef-projet/{projectLeaderId}")
+    public ResponseEntity<List<AutorisationSortie>> getAutorisationsForProjectLeader(@PathVariable Long projectLeaderId) {
+        User projectLeader = new User();
+        projectLeader.setIdUser(projectLeaderId);
+
+        List<AutorisationSortie> autorisations = autorisationSortieService.getAutorisationsForProjectLeader(projectLeader);
+        return ResponseEntity.ok(autorisations);
+    }
+
+        @PostMapping("/validerSuperviseur/{id}")
+    public ResponseEntity<Map<String, String>> validerParSuperviseur(
+            @PathVariable Long id,
+            @RequestParam EtatDemande etat) { // Utilisez @RequestParam pour récupérer l'état
+        try {
+            autorisationSortieService.validerParSuperviseur(id, etat); // Passez l'état dynamiquement
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur avec l'état : " + etat);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + etat);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/validerChefProjet/{id}")
+    public ResponseEntity<Map<String, String>> validerParChefProjet(
+            @PathVariable Long id,
+            @RequestParam EtatDemande etat) { // Utilisez @RequestParam pour récupérer l'état
+        try {
+            autorisationSortieService.validerParChefProjet(id, etat); // Passez l'état dynamiquement
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur avec l'état : " + etat);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + etat);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/validerRH/{id}")
+    public ResponseEntity<Map<String, String>> validerParRH(
+            @PathVariable Long id,
+            @RequestParam EtatDemande etat) { // Utilisez @RequestParam pour récupérer l'état
+        try {
+            autorisationSortieService.validerParRH(id, etat); // Passez l'état dynamiquement
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur avec l'état : " + etat);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + etat);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
 }

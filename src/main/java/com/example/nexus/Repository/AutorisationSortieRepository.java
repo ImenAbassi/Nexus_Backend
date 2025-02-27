@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.nexus.Entitie.AutorisationSortie;
 import com.example.nexus.Entitie.EtatDemande;
+import com.example.nexus.Entitie.User;
 
 @Repository
 public interface AutorisationSortieRepository extends JpaRepository<AutorisationSortie, Long> {
@@ -18,4 +19,6 @@ public interface AutorisationSortieRepository extends JpaRepository<Autorisation
     List<AutorisationSortie> findByEtatRH(EtatDemande etat);
     List<AutorisationSortie> findByEtatSuperviseurAndEtatChefProjetAndEtatRH(EtatDemande etatSuperviseur, EtatDemande etatChefProjet, EtatDemande etatRH);
     List<AutorisationSortie> findByEtatSuperviseurOrEtatChefProjetOrEtatRH(EtatDemande etatSuperviseur, EtatDemande etatChefProjet, EtatDemande etatRH);
+
+    List<AutorisationSortie> findByUtilisateur(User utilisateur);
 }

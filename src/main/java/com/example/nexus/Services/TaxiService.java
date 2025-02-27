@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaxiService {
@@ -62,5 +63,21 @@ public class TaxiService {
     public void supprimerTaxi(Long id) {
         Taxi taxi = obtenirTaxiParId(id);
         taxiRepository.delete(taxi);
+    }
+
+    public List<Taxi> getTaxisByUser(User user) {
+        return taxiRepository.findByUser(user);
+    }
+
+    // Valider une demande de taxi
+    public Taxi validateDemande(Long id, EtatDemande etatDemande) {
+        Optional<Taxi> optionalTaxi = taxiRepository.findById(id);
+        if (optionalTaxi.isPresent()) {
+            Taxi taxi = optionalTaxi.get();
+            taxi.setEtatDemande(etatDemande);
+            return taxiRepository.save(taxi);
+        } else {
+            throw new RuntimeException("Demande de taxi non trouvée avec l'ID : " + id);
+        }
     }
 }

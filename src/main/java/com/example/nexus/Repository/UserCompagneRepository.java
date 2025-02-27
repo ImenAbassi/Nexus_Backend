@@ -25,5 +25,9 @@ public interface UserCompagneRepository extends JpaRepository<UserCompagne, Long
     List<UserCompagne> findAllByProjectLeader_IdUserAndCompagne_Id(Long projectLeaderId, Long compagneId);
     List<UserCompagne> findBySupervisorIsNullAndProjectLeaderIsNull();
     List<UserCompagne> findBySupervisorIsNotNullOrProjectLeaderIsNotNull();
+    List<UserCompagne> findByUser(User user);
+    List<UserCompagne> findBySupervisor(User supervisor); // Find by supervisor
+    List<UserCompagne> findByProjectLeader(User projectLeader); // Find by project leader
+
 
 }

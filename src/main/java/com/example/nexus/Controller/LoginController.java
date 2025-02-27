@@ -1,10 +1,11 @@
 package com.example.nexus.Controller;
 
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.nexus.Entitie.Pointage;
 import com.example.nexus.Entitie.PointageOperation;
+import com.example.nexus.Entitie.Privilege;
 import com.example.nexus.Entitie.User;
+import com.example.nexus.Entitie.UserCompagne;
 import com.example.nexus.Repository.PointageOperationRepository;
 import com.example.nexus.Repository.PointageRepository;
 import com.example.nexus.Repository.UserRepository;
@@ -54,7 +57,7 @@ public class LoginController {
     @Autowired
     private UserRepository userRepository;
 
-     @Autowired
+    @Autowired
     private PointageRepository pointageRepository;
 
     @Autowired
@@ -65,21 +68,31 @@ public class LoginController {
         try {
             // Authenticate the user
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Generate JWT token
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtTokenUtil.generateToken(userDetails);
-             User user = userRepository.findByCin(loginRequest.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + loginRequest.getUsername()));
-             //  handleLoginPointage(user);
-            // Return user and token
+
+            // Fetch the user by CIN (username)
+            User user = userRepository.findByCin(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException(
+                            "User not found with username: " + loginRequest.getUsername()));
+
+            // Fetch privileges for the user
+            List<Privilege> privileges = user.getUserCompagnes().stream()
+                    .map(UserCompagne::getRole)
+                    .flatMap(role -> role.getPrivileges().stream())
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            // Return user, token, and privileges
             Map<String, Object> response = new HashMap<>();
             response.put("user", user);
             response.put("token", token);
+            response.put("privileges", privileges);
 
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
@@ -93,12 +106,12 @@ public class LoginController {
         if (token != null) {
             jwtTokenUtil.validateToken(token); // Invalidate the token
         }
-         // Récupérer l'utilisateur via le token
-         String username = jwtTokenUtil.extractUsername(token);
-         User user = userRepository.findByCin(username)
-             .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
- 
-        //handleLogoutPointage(user);
+        // Récupérer l'utilisateur via le token
+        String username = jwtTokenUtil.extractUsername(token);
+        User user = userRepository.findByCin(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        // handleLogoutPointage(user);
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logged out successfully");
     }
@@ -131,10 +144,10 @@ public class LoginController {
     public void handleLoginPointage(User user) {
         LocalDate today = LocalDate.now();
         Pointage pointage = pointageRepository.findByUserAndDatePointage(user, today)
-            .orElseGet(() -> createNewPointage(user, today));
+                .orElseGet(() -> createNewPointage(user, today));
 
-            addPointageOperation(pointage, "ENTREE");
-        
+        addPointageOperation(pointage, "ENTREE");
+
     }
 
     public void handleLogoutPointage(User user) {

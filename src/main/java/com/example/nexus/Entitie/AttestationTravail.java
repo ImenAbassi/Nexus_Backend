@@ -4,7 +4,6 @@ package com.example.nexus.Entitie;
 import java.time.LocalDate;
 
 import com.example.nexus.Entitie.inhertance.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -3,6 +3,7 @@ package com.example.nexus.Controller;
 import com.example.nexus.Dto.TaxiDTO;
 import com.example.nexus.Entitie.EtatDemande;
 import com.example.nexus.Entitie.Taxi;
+import com.example.nexus.Entitie.User;
 import com.example.nexus.Services.TaxiService;
 import com.example.nexus.mapper.ObjectMapper;
 
@@ -65,5 +66,22 @@ public class TaxiController {
     public ResponseEntity<Void> supprimerTaxi(@PathVariable Long id) {
         taxiService.supprimerTaxi(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Récupérer toutes les demandes de taxi pour un utilisateur spécifique
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Taxi>> getTaxisByUser(@PathVariable Long userId) {
+        User user = new User();
+        user.setIdUser(userId);
+
+        List<Taxi> taxis = taxiService.getTaxisByUser(user);
+        return ResponseEntity.ok(taxis);
+    }
+
+    // Valider une demande de taxi
+    @PutMapping("/{id}/validate")
+    public ResponseEntity<Taxi> validateDemande(@PathVariable Long id, @RequestParam EtatDemande etatDemande) {
+        Taxi updatedTaxi = taxiService.validateDemande(id, etatDemande);
+        return ResponseEntity.ok(updatedTaxi);
     }
 }
