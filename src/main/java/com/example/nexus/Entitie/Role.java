@@ -15,16 +15,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class Role extends BaseEntity  implements Serializable {
 
 	private static final long serialVersionUID = 2022120L;
@@ -44,6 +38,16 @@ public class Role extends BaseEntity  implements Serializable {
         inverseJoinColumns = @JoinColumn(name = "privilege_id")
     )
     private List<Privilege> privileges = new ArrayList<>();
+
+
+	
+
+	public Role(Long id, String name, String description, List<Privilege> privileges) {
+		this.id = id;
+		this.name = name;
+		this.description = description;
+		this.privileges = privileges;
+	}
 
 	public Long getId() {
 		return id;
@@ -70,5 +74,15 @@ public class Role extends BaseEntity  implements Serializable {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+	public List<Privilege> getPrivileges() {
+		return privileges;
+	}
+
+	public void setPrivileges(List<Privilege> privileges) {
+		this.privileges = privileges;
+	}
+
+	
 
 }

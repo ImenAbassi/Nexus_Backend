@@ -27,7 +27,8 @@ public class DefaultPrivilegeInitializer {
         "Validation_Autorisation_ChefProjet",
         "Validation_Autorisation_Superviseur",
         "Validation_Attestation",
-        "Validation_Transport"
+        "Validation_Transport",
+        "Validation_Pointage"
     );
 
     @EventListener(ApplicationReadyEvent.class)
