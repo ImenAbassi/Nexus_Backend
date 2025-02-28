@@ -4,6 +4,8 @@ import com.example.nexus.Entitie.inhertance.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -49,8 +51,10 @@ public class Pointage extends BaseEntity {
 
     private Long heuresTravaillees; // Total des heures travaillées en minutes
 
+    @Enumerated(EnumType.STRING)
+    private EtatDemande etatDemande; 
     // Méthode pour calculer les heures travaillées
-    public void calculerHeuresTravaillees() {
+     public void calculerHeuresTravaillees() {
         if (operations == null || operations.isEmpty()) {
             System.out.println("Aucune opération de pointage trouvée.");
             this.heuresTravaillees = 0L;

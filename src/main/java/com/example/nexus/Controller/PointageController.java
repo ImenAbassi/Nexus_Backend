@@ -2,6 +2,8 @@ package com.example.nexus.Controller;
 
 import com.example.nexus.Dto.PointageDTO;
 import com.example.nexus.Entitie.Pointage;
+import com.example.nexus.Entitie.PointageOperation;
+import com.example.nexus.Entitie.User;
 import com.example.nexus.Services.PointageService;
 import com.example.nexus.mapper.ObjectMapper;
 
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/pointages")
+@CrossOrigin(origins = "http://localhost:4200")
 public class PointageController {
 
     @Autowired
@@ -29,6 +33,35 @@ public class PointageController {
         List<Pointage> pointages = pointageService.getAllPointages();
         return ResponseEntity.ok(ObjectMapper.mapAll(pointages,PointageDTO.class));
     }
+
+      @PostMapping("/create-by-supervisor/{id}")
+    public ResponseEntity<List<PointageDTO>> createPointagesBySupervisor(@PathVariable Long id,@RequestParam LocalDate date) {
+        // Récupérer l'utilisateur actuellement connecté (superviseur)
+        User user =new User();
+        user.setIdUser(id);
+        List<Pointage> createdPointages = pointageService.createPointagesBySupervisor(user, date);
+        return ResponseEntity.ok(ObjectMapper.mapAll(createdPointages,PointageDTO.class));
+    }
+
+    // Add operation to a pointage
+    @PostMapping("/{pointageId}/operations")
+    public ResponseEntity<PointageOperation> addOperationToPointage(@PathVariable Long pointageId, @RequestBody PointageOperation operation) {
+        return ResponseEntity.ok(pointageService.addOperationToPointage(pointageId, operation));
+    }
+
+    // Update an operation
+    @PutMapping("/operations/{operationId}")
+    public ResponseEntity<PointageOperation> updateOperation(@PathVariable Long operationId, @RequestBody PointageOperation operation) {
+        return ResponseEntity.ok(pointageService.updateOperation(operationId, operation));
+    }
+
+    // Delete an operation
+    @DeleteMapping("/operations/{operationId}")
+    public ResponseEntity<Void> deleteOperation(@PathVariable Long operationId) {
+        pointageService.deleteOperation(operationId);
+        return ResponseEntity.noContent().build();
+    }
+
 
     // Récupérer les pointages par date
     @GetMapping("/by-date")

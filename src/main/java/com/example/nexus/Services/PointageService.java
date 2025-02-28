@@ -12,11 +12,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.nexus.Dto.PointageDTO;
+import com.example.nexus.Entitie.EtatDemande;
 import com.example.nexus.Entitie.Pointage;
 import com.example.nexus.Entitie.PointageOperation;
 import com.example.nexus.Entitie.User;
+import com.example.nexus.Entitie.UserCompagne;
+import com.example.nexus.Repository.CompagneRepository;
 import com.example.nexus.Repository.PointageOperationRepository;
 import com.example.nexus.Repository.PointageRepository;
+import com.example.nexus.Repository.UserCompagneRepository;
 import com.example.nexus.Repository.UserRepository;
 import com.example.nexus.mapper.ObjectMapper;
 
@@ -43,6 +47,9 @@ public class PointageService {
 
     @Autowired
     private PointageOperationRepository pointageOperationRepository;
+
+   @Autowired
+    private UserCompagneRepository userCompagneRepository;
 
     // Récupérer tous les pointages
     public List<Pointage> getAllPointages() {
@@ -181,5 +188,49 @@ public class PointageService {
                 return "";
         }
     }
+    public List<Pointage> createPointagesBySupervisor(User supervisor, LocalDate date) {
+        // Vérifier si le superviseur existe
+        if (supervisor == null || supervisor.getIdUser() == null) {
+            throw new IllegalArgumentException("Superviseur non valide.");
+        }
+        List<UserCompagne> userCompagnes = userCompagneRepository.findBySupervisor(supervisor);
+
+        // Créer un pointage pour chaque utilisateur
+        List<Pointage> pointages = new ArrayList<>();
+        for (UserCompagne uc : userCompagnes) {
+            Pointage pointage = new Pointage();
+            pointage.setDatePointage(date);
+            pointage.setUser(uc.getUser());
+            pointage.setHeuresTravaillees(0L); // Heures travaillées initialisées à 0
+            pointage.setEtatDemande(EtatDemande.EN_ATTENTE); // État initialisé à "EN_COURS"
+            pointageRepository.save(pointage);
+            pointages.add(pointage);
+        }
+
+        return pointages;
+    }
+
+
+    // Add operation to a pointage
+    public PointageOperation addOperationToPointage(Long pointageId, PointageOperation operation) {
+        Pointage pointage = pointageRepository.findById(pointageId).orElseThrow();
+        operation.setPointage(pointage);
+        return pointageOperationRepository.save(operation);
+    }
+
+    // Update an operation
+    public PointageOperation updateOperation(Long operationId, PointageOperation operation) {
+        PointageOperation existingOperation = pointageOperationRepository.findById(operationId).orElseThrow();
+        existingOperation.setCompagne(operation.getCompagne());
+        existingOperation.setType(operation.getType());
+        existingOperation.setHeure(operation.getHeure());
+        return pointageOperationRepository.save(existingOperation);
+    }
+
+    // Delete an operation
+    public void deleteOperation(Long operationId) {
+        pointageOperationRepository.deleteById(operationId);
+    }
 
 }
+

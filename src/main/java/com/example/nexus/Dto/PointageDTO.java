@@ -3,6 +3,10 @@ package com.example.nexus.Dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.example.nexus.Entitie.EtatDemande;
+
+
+
 
 public class PointageDTO {
 
@@ -13,7 +17,7 @@ public class PointageDTO {
 
     private UserDTO user; // Utilisateur associé au pointage
 
-
+    private EtatDemande etatDemande; 
     private Long heuresTravaillees;
 
 private List<PointageOperationDTO> operations;
@@ -71,6 +75,16 @@ private List<PointageOperationDTO> operations;
 
     public void setOperations(List<PointageOperationDTO> operations) {
         this.operations = operations;
+    }
+
+
+    public EtatDemande getEtatDemande() {
+        return etatDemande;
+    }
+
+
+    public void setEtatDemande(EtatDemande etatDemande) {
+        this.etatDemande = etatDemande;
     } 
 
 
