@@ -1,6 +1,7 @@
 package com.example.nexus.Controller;
 
 import com.example.nexus.Dto.PointageDTO;
+import com.example.nexus.Entitie.EtatDemande;
 import com.example.nexus.Entitie.Pointage;
 import com.example.nexus.Entitie.PointageOperation;
 import com.example.nexus.Entitie.User;
@@ -31,42 +32,53 @@ public class PointageController {
     @GetMapping
     public ResponseEntity<List<PointageDTO>> getAllPointages() {
         List<Pointage> pointages = pointageService.getAllPointages();
-        return ResponseEntity.ok(ObjectMapper.mapAll(pointages,PointageDTO.class));
+        return ResponseEntity.ok(ObjectMapper.mapAll(pointages, PointageDTO.class));
     }
 
-      @PostMapping("/create-by-supervisor/{id}")
-    public ResponseEntity<List<PointageDTO>> createPointagesBySupervisor(@PathVariable Long id,@RequestParam LocalDate date) {
-        // Récupérer l'utilisateur actuellement connecté (superviseur)
-        User user =new User();
-        user.setIdUser(id);
-        List<Pointage> createdPointages = pointageService.createPointagesBySupervisor(user, date);
-        return ResponseEntity.ok(ObjectMapper.mapAll(createdPointages,PointageDTO.class));
+    // Créer des pointages pour un superviseur donné
+    @PostMapping("/create-by-supervisor/{id}")
+    public ResponseEntity<List<PointageDTO>> createPointagesBySupervisor(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        User supervisor = new User();
+        supervisor.setIdUser(id);
+        List<Pointage> createdPointages = pointageService.createPointagesBySupervisor(supervisor, date);
+        return ResponseEntity.ok(ObjectMapper.mapAll(createdPointages, PointageDTO.class));
     }
 
-    // Add operation to a pointage
+    // Ajouter une opération à un pointage
     @PostMapping("/{pointageId}/operations")
-    public ResponseEntity<PointageOperation> addOperationToPointage(@PathVariable Long pointageId, @RequestBody PointageOperation operation) {
-        return ResponseEntity.ok(pointageService.addOperationToPointage(pointageId, operation));
+    public ResponseEntity<PointageOperation> addOperationToPointage(
+            @PathVariable Long pointageId,
+            @RequestBody PointageOperation operation
+    ) {
+        PointageOperation addedOperation = pointageService.addOperationToPointage(pointageId, operation);
+        return ResponseEntity.ok(addedOperation);
     }
 
-    // Update an operation
+    // Mettre à jour une opération
     @PutMapping("/operations/{operationId}")
-    public ResponseEntity<PointageOperation> updateOperation(@PathVariable Long operationId, @RequestBody PointageOperation operation) {
-        return ResponseEntity.ok(pointageService.updateOperation(operationId, operation));
+    public ResponseEntity<PointageOperation> updateOperation(
+            @PathVariable Long operationId,
+            @RequestBody PointageOperation operation
+    ) {
+        PointageOperation updatedOperation = pointageService.updateOperation(operationId, operation);
+        return ResponseEntity.ok(updatedOperation);
     }
 
-    // Delete an operation
+    // Supprimer une opération
     @DeleteMapping("/operations/{operationId}")
     public ResponseEntity<Void> deleteOperation(@PathVariable Long operationId) {
         pointageService.deleteOperation(operationId);
         return ResponseEntity.noContent().build();
     }
 
-
     // Récupérer les pointages par date
     @GetMapping("/by-date")
     public ResponseEntity<List<Pointage>> getPointagesByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
         List<Pointage> pointages = pointageService.getPointagesByDate(date);
         return ResponseEntity.ok(pointages);
     }
@@ -75,6 +87,9 @@ public class PointageController {
     @GetMapping("/{id}")
     public ResponseEntity<Pointage> getPointageById(@PathVariable Long id) {
         Pointage pointage = pointageService.getPointageById(id);
+        if (pointage == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(pointage);
     }
 
@@ -82,13 +97,19 @@ public class PointageController {
     @PostMapping
     public ResponseEntity<Pointage> createPointage(@RequestBody Pointage pointage) {
         Pointage createdPointage = pointageService.createPointage(pointage);
-        return ResponseEntity.ok(createdPointage);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPointage);
     }
 
     // Mettre à jour un pointage existant
     @PutMapping("/{id}")
-    public ResponseEntity<Pointage> updatePointage(@PathVariable Long id, @RequestBody Pointage pointage) {
+    public ResponseEntity<Pointage> updatePointage(
+            @PathVariable Long id,
+            @RequestBody Pointage pointage
+    ) {
         Pointage updatedPointage = pointageService.updatePointage(id, pointage);
+        if (updatedPointage == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(updatedPointage);
     }
 
@@ -99,6 +120,7 @@ public class PointageController {
         return ResponseEntity.noContent().build();
     }
 
+    // Importer un fichier Excel
     @PostMapping("/import")
     public ResponseEntity<?> importerFichierExcel(@RequestParam("file") MultipartFile file) {
         try {
@@ -113,4 +135,36 @@ public class PointageController {
         }
     }
     
+    // Valider un pointage
+    @PostMapping("/{id}/validate")
+    public ResponseEntity<Pointage> validatePointage(@PathVariable Long id) {
+        Pointage pointage = pointageService.validatePointage(id);
+        if (pointage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(pointage);
+    }
+
+    // Obtenir toutes les opérations d'un pointage
+    @GetMapping("/{pointageId}/operations")
+    public ResponseEntity<List<PointageOperation>> getOperationsByPointageId(@PathVariable Long pointageId) {
+        List<PointageOperation> operations = pointageService.getOperationsByPointageId(pointageId);
+        return ResponseEntity.ok(operations);
+    }
+
+    // Exporter les pointages vers un fichier Excel
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportPointagesToExcel(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        try {
+            byte[] excelData = pointageService.exportPointagesToExcel(date);
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=pointages.xlsx")
+                    .body(excelData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 }

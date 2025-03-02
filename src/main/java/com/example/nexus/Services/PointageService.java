@@ -1,6 +1,7 @@
 package com.example.nexus.Services;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ import com.example.nexus.Repository.UserCompagneRepository;
 import com.example.nexus.Repository.UserRepository;
 import com.example.nexus.mapper.ObjectMapper;
 
+import jakarta.transaction.Transactional;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -230,6 +234,58 @@ public class PointageService {
     // Delete an operation
     public void deleteOperation(Long operationId) {
         pointageOperationRepository.deleteById(operationId);
+    }
+
+    @Transactional
+    public Pointage validatePointage(Long id) {
+        Optional<Pointage> optionalPointage = pointageRepository.findById(id);
+        if (optionalPointage.isPresent()) {
+            Pointage pointage = optionalPointage.get();
+            pointage.setEtatDemande(EtatDemande.APPROUVEE); // Changer l'état à "Validé"
+            return pointageRepository.save(pointage);
+        }
+        return null;
+    }
+
+    // Obtenir toutes les opérations d'un pointage
+    public List<PointageOperation> getOperationsByPointageId(Long pointageId) {
+        return pointageOperationRepository.findByPointageId(pointageId);
+    }
+
+    // Exporter les pointages vers un fichier Excel
+    public byte[] exportPointagesToExcel(LocalDate date) throws Exception {
+        List<Pointage> pointages = (date != null) ? pointageRepository.findByDatePointage(date) : pointageRepository.findAll();
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Pointages");
+
+            // En-têtes du tableau
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"ID", "Date Pointage", "Utilisateur", "Heures Travaillées", "État"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            // Remplir les données
+            int rowIndex = 1;
+            for (Pointage pointage : pointages) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(pointage.getId());
+                row.createCell(1).setCellValue(pointage.getDatePointage().toString());
+                row.createCell(2).setCellValue(pointage.getUser().getNom() + " " + pointage.getUser().getPrenom());
+                row.createCell(3).setCellValue(pointage.getHeuresTravaillees() / 60.0); // Convertir en heures
+                row.createCell(4).setCellValue(pointage.getEtatDemande().name());
+            }
+
+            // Générer le fichier Excel en mémoire
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new Exception("Erreur lors de l'exportation des pointages : " + e.getMessage(), e);
+        }
     }
 
 }
