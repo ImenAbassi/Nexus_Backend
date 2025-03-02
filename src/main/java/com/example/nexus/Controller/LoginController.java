@@ -24,15 +24,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.nexus.Entitie.Pointage;
-import com.example.nexus.Entitie.PointageOperation;
+
 import com.example.nexus.Entitie.Privilege;
 import com.example.nexus.Entitie.User;
 import com.example.nexus.Entitie.UserCompagne;
-import com.example.nexus.Repository.PointageOperationRepository;
-import com.example.nexus.Repository.PointageRepository;
 import com.example.nexus.Repository.UserRepository;
-import com.example.nexus.Services.UserService;
 import com.example.nexus.security.JwtTokenUtil;
 import com.example.nexus.security.LoginRequest;
 import com.example.nexus.security.UserDetailsServiceImpl;
@@ -56,12 +52,6 @@ public class LoginController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private PointageRepository pointageRepository;
-
-    @Autowired
-    private PointageOperationRepository pointageOperationRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -141,7 +131,7 @@ public class LoginController {
         }
     }
 
-    public void handleLoginPointage(User user) {
+   /*  public void handleLoginPointage(User user) {
         LocalDate today = LocalDate.now();
         Pointage pointage = pointageRepository.findByUserAndDatePointage(user, today)
                 .orElseGet(() -> createNewPointage(user, today));
@@ -150,7 +140,7 @@ public class LoginController {
 
     }
 
-    public void handleLogoutPointage(User user) {
+   public void handleLogoutPointage(User user) {
         LocalDate today = LocalDate.now();
         Pointage pointage = pointageRepository.findByUserAndDatePointage(user, today).orElse(null);
 
@@ -177,5 +167,5 @@ public class LoginController {
         operation.setHeure(LocalDateTime.now());
         operation.setType(type);
         pointageOperationRepository.save(operation);
-    }
+    } */
 }

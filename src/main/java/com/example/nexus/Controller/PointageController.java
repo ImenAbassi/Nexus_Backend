@@ -18,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pointages")
@@ -28,12 +30,52 @@ public class PointageController {
     @Autowired
     private PointageService pointageService;
 
+
     // Récupérer tous les pointages
     @GetMapping
     public ResponseEntity<List<PointageDTO>> getAllPointages() {
         List<Pointage> pointages = pointageService.getAllPointages();
         return ResponseEntity.ok(ObjectMapper.mapAll(pointages, PointageDTO.class));
     }
+
+      @PostMapping("/valider/{id}")
+    public ResponseEntity<Map<String, String>> valider(
+            @PathVariable Long id,
+            @RequestParam EtatDemande etat) { // Utilisez @RequestParam pour récupérer l'état
+        try {
+            pointageService.valider(id, etat); // Passez l'état dynamiquement
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Demande validée par le superviseur avec l'état : " + etat);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "État invalide : " + etat);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+
+    @PostMapping("/withoperation")
+public ResponseEntity<Pointage> createPointageWithOperations(@RequestBody Pointage pointage) {
+    Pointage createdPointage = pointageService.createPointageWithOperations(pointage);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdPointage);
+}
+
+@PutMapping("/withoperation/{id}")
+public ResponseEntity<Pointage> updatePointageWithOperations(
+        @PathVariable Long id,
+        @RequestBody Pointage pointage
+) {
+    Pointage updatedPointage = pointageService.updatePointageWithOperations(id, pointage);
+    if (updatedPointage == null) {
+        return ResponseEntity.notFound().build();
+    }
+    return ResponseEntity.ok(updatedPointage);
+}
 
     // Créer des pointages pour un superviseur donné
     @PostMapping("/create-by-supervisor/{id}")
@@ -75,13 +117,13 @@ public class PointageController {
     }
 
     // Récupérer les pointages par date
-    @GetMapping("/by-date")
+   /*  @GetMapping("/by-date")
     public ResponseEntity<List<Pointage>> getPointagesByDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         List<Pointage> pointages = pointageService.getPointagesByDate(date);
         return ResponseEntity.ok(pointages);
-    }
+    }*/
 
     // Récupérer un pointage par son ID
     @GetMapping("/{id}")
@@ -121,7 +163,7 @@ public class PointageController {
     }
 
     // Importer un fichier Excel
-    @PostMapping("/import")
+   /* @PostMapping("/import")
     public ResponseEntity<?> importerFichierExcel(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
@@ -133,7 +175,7 @@ public class PointageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de l'importation du fichier Excel : " + e.getMessage());
         }
-    }
+    }*/
     
     // Valider un pointage
     @PostMapping("/{id}/validate")
@@ -146,14 +188,14 @@ public class PointageController {
     }
 
     // Obtenir toutes les opérations d'un pointage
-    @GetMapping("/{pointageId}/operations")
+  /*   @GetMapping("/{pointageId}/operations")
     public ResponseEntity<List<PointageOperation>> getOperationsByPointageId(@PathVariable Long pointageId) {
         List<PointageOperation> operations = pointageService.getOperationsByPointageId(pointageId);
         return ResponseEntity.ok(operations);
-    }
+    }*/
 
     // Exporter les pointages vers un fichier Excel
-    @GetMapping("/export/excel")
+ /*    @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportPointagesToExcel(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
@@ -166,5 +208,5 @@ public class PointageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
-    }
+    }*/
 }

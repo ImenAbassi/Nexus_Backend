@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.nexus.Dto.UserCompagneDTO;
+import com.example.nexus.Entitie.UserCompagne;
 
 @CrossOrigin(origins = "*") 
 @RequestMapping("/usercompagne")
@@ -32,5 +33,8 @@ public interface UserCompagneApi {
 
 	@GetMapping("/getAll")
 	ResponseEntity<List<UserCompagneDTO>> getAll();
+
+	  @GetMapping("/supervisor/{id}")
+    public List<UserCompagne> getUserCompagnesBySupervisor(@PathVariable Long id);
 
 }

@@ -13,14 +13,19 @@ public class PointageDTO {
 
       private Long id;
 
-    private LocalDate datePointage; // Date du pointage
 
-    private UserDTO user; // Utilisateur associé au pointage
 
-    private EtatDemande etatDemande; 
-    private Long heuresTravaillees;
+    private LocalDate datePointage;
 
-private List<PointageOperationDTO> operations;
+    private UserCompagneDTO user;
+
+    private List<PointageOperationDTO> listOperation;
+
+    private int retard; // En heures
+
+    private double totalHeure;
+
+    private EtatDemande etatDemande;
 
     
 
@@ -28,9 +33,11 @@ private List<PointageOperationDTO> operations;
     }
 
 
+
     public Long getId() {
         return id;
     }
+
 
 
     public void setId(Long id) {
@@ -38,9 +45,11 @@ private List<PointageOperationDTO> operations;
     }
 
 
+
     public LocalDate getDatePointage() {
         return datePointage;
     }
+
 
 
     public void setDatePointage(LocalDate datePointage) {
@@ -48,34 +57,53 @@ private List<PointageOperationDTO> operations;
     }
 
 
-    public UserDTO getUser() {
+
+    public UserCompagneDTO getUser() {
         return user;
     }
 
 
-    public void setUser(UserDTO user) {
+
+    public void setUser(UserCompagneDTO user) {
         this.user = user;
     }
 
 
-    public Long getHeuresTravaillees() {
-        return heuresTravaillees;
+
+    public List<PointageOperationDTO> getListOperation() {
+        return listOperation;
     }
 
 
-    public void setHeuresTravaillees(Long heuresTravaillees) {
-        this.heuresTravaillees = heuresTravaillees;
+
+    public void setListOperation(List<PointageOperationDTO> listOperation) {
+        this.listOperation = listOperation;
     }
 
 
-    public List<PointageOperationDTO> getOperations() {
-        return operations;
+
+    public int getRetard() {
+        return retard;
     }
 
 
-    public void setOperations(List<PointageOperationDTO> operations) {
-        this.operations = operations;
+
+    public void setRetard(int retard) {
+        this.retard = retard;
     }
+
+
+
+    public double getTotalHeure() {
+        return totalHeure;
+    }
+
+
+
+    public void setTotalHeure(double totalHeure) {
+        this.totalHeure = totalHeure;
+    }
+
 
 
     public EtatDemande getEtatDemande() {
@@ -83,9 +111,13 @@ private List<PointageOperationDTO> operations;
     }
 
 
+
     public void setEtatDemande(EtatDemande etatDemande) {
         this.etatDemande = etatDemande;
-    } 
+    }
+
+
+    
 
 
     

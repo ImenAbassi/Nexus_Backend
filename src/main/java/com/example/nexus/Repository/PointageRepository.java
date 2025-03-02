@@ -12,8 +12,8 @@ import com.example.nexus.Entitie.User;
 
 @Repository
 public interface PointageRepository extends JpaRepository<Pointage, Long> {
-        Optional<Pointage> findByUserAndDatePointage(User user, LocalDate date);
+        /*Optional<Pointage> findByUserAndDatePointage(User user, LocalDate date);
         List<Pointage> findByDatePointage(LocalDate date);
-        Optional<Pointage> findByDatePointageAndUser(LocalDate datePointage, User user);
+        Optional<Pointage> findByDatePointageAndUser(LocalDate datePointage, User user);*/
 
 }

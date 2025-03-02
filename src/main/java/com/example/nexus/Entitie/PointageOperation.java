@@ -7,6 +7,7 @@ import com.example.nexus.Entitie.inhertance.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,19 +34,11 @@ public class PointageOperation extends BaseEntity {
     @JoinColumn(name = "pointage_id", nullable = false)
     private Pointage pointage;
 
-    private String compagne;
+    @ManyToOne
+    @JoinColumn(name = "type_pointage_id", nullable = false)
+    private TypePointage typePointage;
 
-    @Column(nullable = false)
-    private LocalDateTime heure;
+    @Column(name = "total_heure", nullable = false)
+    private double totalHeure;
 
-    @Column(nullable = false)
-    private String type;
-
-     @PrePersist
-    @PreUpdate
-    public void updatePointageHeuresTravaillees() {
-        if (pointage != null) {
-            pointage.calculerHeuresTravaillees();
-        }
-    }
 }

@@ -5,14 +5,17 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.yaml.snakeyaml.util.EnumUtils;
 
 import com.example.nexus.Dto.PointageDTO;
+import com.example.nexus.Entitie.AutorisationSortie;
 import com.example.nexus.Entitie.EtatDemande;
 import com.example.nexus.Entitie.Pointage;
 import com.example.nexus.Entitie.PointageOperation;
@@ -25,6 +28,7 @@ import com.example.nexus.Repository.UserCompagneRepository;
 import com.example.nexus.Repository.UserRepository;
 import com.example.nexus.mapper.ObjectMapper;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import java.io.ByteArrayOutputStream;
@@ -60,10 +64,98 @@ public class PointageService {
         return pointageRepository.findAll();
     }
 
-    // Récupérer les pointages par date
-    public List<Pointage> getPointagesByDate(LocalDate date) {
-        return pointageRepository.findByDatePointage(date);
+    @Transactional
+public void valider(Long id, EtatDemande etat) {
+
+    try {
+        // Récupération du pointage par son ID
+        Pointage pointage = pointageRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Aucun pointage trouvé avec l'ID : " + id));
+
+        // Mise à jour de l'état de la demande
+        pointage.setEtatDemande(etat);
+
+        // Sauvegarde des modifications
+        pointageRepository.save(pointage);
+
+    } catch (EmptyResultDataAccessException e) {
+        // Gestion explicite du cas où l'ID n'existe pas
+        throw new EntityNotFoundException("Aucun pointage trouvé avec l'ID : " + id, e);
+    } catch (Exception e) {
+        // Gestion générale des autres exceptions
+        throw new RuntimeException("Une erreur est survenue lors de la validation du pointage.", e);
     }
+}
+
+    // Récupérer les pointages par date
+    /*public List<Pointage> getPointagesByDate(LocalDate date) {
+        return pointageRepository.findByDatePointage(date);
+    }*/
+
+    @Transactional
+public Pointage createPointageWithOperations(Pointage pointage) {
+    List<PointageOperation> listOperation = pointage.getListOperation();
+    pointage.setListOperation(new ArrayList());
+    // Sauvegarder le Pointage pour obtenir son ID
+    Pointage savedPointage = pointageRepository.save(pointage);
+
+    // Ajouter les opérations liées au Pointage
+    if (listOperation != null && !listOperation.isEmpty()) {
+        for (PointageOperation operation : listOperation) {
+            operation.setPointage(savedPointage); // Affecter le Pointage sauvegardé
+            pointageOperationRepository.save(operation);
+        }
+    }
+
+    return savedPointage;
+}
+
+
+@Transactional
+public Pointage updatePointageWithOperations(Long id, Pointage pointageDetails) {
+    List<PointageOperation> listOperation = pointageDetails.getListOperation();
+    Pointage pointage = getPointageById(id);
+    /*pointageOperationRepository.deleteByPointage(pointage);
+    // Clear the existing operations from the collection
+    pointage.setListOperation(new ArrayList());
+
+    // Update the Pointage fields
+    pointage.setEtatDemande(pointageDetails.getEtatDemande());
+    pointage.setDatePointage(pointageDetails.getDatePointage());
+    pointage.setRetard(pointageDetails.getRetard());
+    pointage.setTotalHeure(pointageDetails.getTotalHeure());
+
+    // Save the Pointage to ensure it has an ID
+    Pointage savedPointage = pointageRepository.save(pointage);*/
+    pointage.getListOperation().clear(); // Clear the existing list instead of replacing it
+
+    // Update the Pointage fields
+    pointage.setEtatDemande(pointageDetails.getEtatDemande());
+    pointage.setDatePointage(pointageDetails.getDatePointage());
+    pointage.setRetard(pointageDetails.getRetard());
+    pointage.setTotalHeure(pointageDetails.getTotalHeure());
+
+    // Save the Pointage to ensure it has an ID
+    Pointage savedPointage = pointageRepository.save(pointage);
+
+    // Add the new operations to the Pointage
+    if (listOperation != null && !listOperation.isEmpty()) {
+        for (PointageOperation operation : listOperation) {
+            operation.setPointage(savedPointage); // Assign the saved Pointage
+            pointage.getListOperation().add(operation); // Add to the existing collection
+        }
+    }
+    // Add the new operations to the Pointage
+     /*if (listOperation != null && !listOperation.isEmpty()) {
+        for (PointageOperation operation : listOperation) {
+            operation.setPointage(savedPointage); // Assign the saved Pointage
+            pointageOperationRepository.save(operation);
+        }
+    }*/
+
+    return savedPointage;
+}
+
 
     // Récupérer un pointage par son ID
     public Pointage getPointageById(Long id) {
@@ -73,7 +165,7 @@ public class PointageService {
 
     // Créer un nouveau pointage
     public Pointage createPointage(Pointage pointage) {
-        pointage.calculerHeuresTravaillees(); // Calculer les heures travaillées avant de sauvegarder
+      //  pointage.calculerHeuresTravaillees(); // Calculer les heures travaillées avant de sauvegarder
         return pointageRepository.save(pointage);
     }
 
@@ -81,10 +173,10 @@ public class PointageService {
     public Pointage updatePointage(Long id, Pointage pointageDetails) {
         Pointage pointage = getPointageById(id);
         pointage.setDatePointage(pointageDetails.getDatePointage());
-        pointage.setOperations(pointageDetails.getOperations());
+       // pointage.setOperations(pointageDetails.getOperations());
         pointage.setUser(pointageDetails.getUser());
-        pointage.setPlanningUser(pointageDetails.getPlanningUser());
-        pointage.calculerHeuresTravaillees(); // Recalculer les heures travaillées
+       // pointage.setPlanningUser(pointageDetails.getPlanningUser());
+       // pointage.calculerHeuresTravaillees(); // Recalculer les heures travaillées
         return pointageRepository.save(pointage);
     }
 
@@ -93,7 +185,7 @@ public class PointageService {
         pointageRepository.deleteById(id);
     }
 
-    public List<PointageDTO> importerFichierExcel(MultipartFile file) throws IOException {
+  /*   public List<PointageDTO> importerFichierExcel(MultipartFile file) throws IOException {
         List<Pointage> pointages = new ArrayList<>();
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0); // Get the first sheet
@@ -119,24 +211,24 @@ public class PointageService {
                             .orElseGet(() -> {
                                 Pointage newPointage = new Pointage();
                                 newPointage.setDatePointage(date);
-                                newPointage.setUser(user);
-                                newPointage.setOperations(new ArrayList<>());
+                    //            newPointage.setUser(user);
+                    //            newPointage.setOperations(new ArrayList<>());
                                 return pointageRepository.save(newPointage);
                             });
 
                     // Create a new PointageOperation
                     PointageOperation operation = new PointageOperation();
-                    operation.setCompagne(login);
-                    operation.setHeure(LocalDateTime.of(date, heure)); // Combine date and time
-                    operation.setType("CNX".equals(type) ? "ENTREE" : "SORTIE");
+                 //   operation.setCompagne(login);
+                 //   operation.setHeure(LocalDateTime.of(date, heure)); // Combine date and time
+                //    operation.setType("CNX".equals(type) ? "ENTREE" : "SORTIE");
                     operation.setPointage(pointage);
 
                     // Add the operation to the list of operations for the Pointage
-                    pointage.getOperations().add(operation);
+                 //   pointage.getOperations().add(operation);
 
                     // Save the operation and update the pointage
                     pointageOperationRepository.save(operation);
-                    pointage.calculerHeuresTravaillees(); // Calculate worked hours
+                //    pointage.calculerHeuresTravaillees(); // Calculate worked hours
                     pointageRepository.save(pointage);
 
                     // Add the pointage to the list
@@ -154,7 +246,7 @@ public class PointageService {
         return ObjectMapper.mapAll(pointages, PointageDTO.class);
     }
     // Helper methods to extract values from cells
-
+*/
     private LocalDate getCellValueAsDate(Cell cell) {
         if (cell == null || cell.getCellType() != CellType.NUMERIC || !DateUtil.isCellDateFormatted(cell)) {
             throw new IllegalArgumentException("La cellule ne contient pas une valeur de date valide.");
@@ -204,9 +296,9 @@ public class PointageService {
         for (UserCompagne uc : userCompagnes) {
             Pointage pointage = new Pointage();
             pointage.setDatePointage(date);
-            pointage.setUser(uc.getUser());
-            pointage.setHeuresTravaillees(0L); // Heures travaillées initialisées à 0
-            pointage.setEtatDemande(EtatDemande.EN_ATTENTE); // État initialisé à "EN_COURS"
+          //  pointage.setUser(uc.getUser());
+          //  pointage.setHeuresTravaillees(0L); // Heures travaillées initialisées à 0
+          //  pointage.setEtatDemande(EtatDemande.EN_ATTENTE); // État initialisé à "EN_COURS"
             pointageRepository.save(pointage);
             pointages.add(pointage);
         }
@@ -225,9 +317,9 @@ public class PointageService {
     // Update an operation
     public PointageOperation updateOperation(Long operationId, PointageOperation operation) {
         PointageOperation existingOperation = pointageOperationRepository.findById(operationId).orElseThrow();
-        existingOperation.setCompagne(operation.getCompagne());
-        existingOperation.setType(operation.getType());
-        existingOperation.setHeure(operation.getHeure());
+    //    existingOperation.setCompagne(operation.getCompagne());
+    //    existingOperation.setType(operation.getType());
+    //    existingOperation.setHeure(operation.getHeure());
         return pointageOperationRepository.save(existingOperation);
     }
 
@@ -241,19 +333,19 @@ public class PointageService {
         Optional<Pointage> optionalPointage = pointageRepository.findById(id);
         if (optionalPointage.isPresent()) {
             Pointage pointage = optionalPointage.get();
-            pointage.setEtatDemande(EtatDemande.APPROUVEE); // Changer l'état à "Validé"
+         //   pointage.setEtatDemande(EtatDemande.APPROUVEE); // Changer l'état à "Validé"
             return pointageRepository.save(pointage);
         }
         return null;
     }
 
-    // Obtenir toutes les opérations d'un pointage
+    /*// Obtenir toutes les opérations d'un pointage
     public List<PointageOperation> getOperationsByPointageId(Long pointageId) {
         return pointageOperationRepository.findByPointageId(pointageId);
-    }
+    }*/
 
     // Exporter les pointages vers un fichier Excel
-    public byte[] exportPointagesToExcel(LocalDate date) throws Exception {
+   /*  public byte[] exportPointagesToExcel(LocalDate date) throws Exception {
         List<Pointage> pointages = (date != null) ? pointageRepository.findByDatePointage(date) : pointageRepository.findAll();
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -273,9 +365,9 @@ public class PointageService {
                 Row row = sheet.createRow(rowIndex++);
                 row.createCell(0).setCellValue(pointage.getId());
                 row.createCell(1).setCellValue(pointage.getDatePointage().toString());
-                row.createCell(2).setCellValue(pointage.getUser().getNom() + " " + pointage.getUser().getPrenom());
-                row.createCell(3).setCellValue(pointage.getHeuresTravaillees() / 60.0); // Convertir en heures
-                row.createCell(4).setCellValue(pointage.getEtatDemande().name());
+             //   row.createCell(2).setCellValue(pointage.getUser().getNom() + " " + pointage.getUser().getPrenom());
+             //   row.createCell(3).setCellValue(pointage.getHeuresTravaillees() / 60.0); // Convertir en heures
+            //    row.createCell(4).setCellValue(pointage.getEtatDemande().name());
             }
 
             // Générer le fichier Excel en mémoire
@@ -286,7 +378,7 @@ public class PointageService {
         } catch (Exception e) {
             throw new Exception("Erreur lors de l'exportation des pointages : " + e.getMessage(), e);
         }
-    }
+    }*/
 
 }
 

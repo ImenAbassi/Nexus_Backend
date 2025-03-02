@@ -1,19 +1,14 @@
 package com.example.nexus.Dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.example.nexus.Entitie.TypePointage;
 
 public class PointageOperationDTO {
 
-            private Long id;
+    private Long id;
 
-    private String compagne;
+    private TypePointage typePointage;
 
-    private LocalDateTime heure;
-
-    private String type;
+    private double totalHeure;
 
     public PointageOperationDTO() {
     }
@@ -26,31 +21,27 @@ public class PointageOperationDTO {
         this.id = id;
     }
 
-    public String getCompagne() {
-        return compagne;
+ 
+
+    public double getTotalHeure() {
+        return totalHeure;
     }
 
-    public void setCompagne(String compagne) {
-        this.compagne = compagne;
+    public void setTotalHeure(double totalHeure) {
+        this.totalHeure = totalHeure;
     }
 
-    public LocalDateTime getHeure() {
-        return heure;
+    public TypePointage getTypePointage() {
+        return typePointage;
     }
 
-    public void setHeure(LocalDateTime heure) {
-        this.heure = heure;
+    public void setTypePointage(TypePointage typePointage) {
+        this.typePointage = typePointage;
     }
 
-    public String getType() {
-        return type;
-    }
+   
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-
+   
 
 
 }
