@@ -10,6 +10,8 @@ import com.example.nexus.Entitie.PointageOperation;
 
 @Repository
 public interface PointageOperationRepository extends JpaRepository<PointageOperation, Long> {
-        boolean existsByPointageAndType(Pointage pointage, String type);
-        List<PointageOperation> findByPointageId(Long pointageId);
+      //  boolean existsByPointageAndType(Pointage pointage, String type);
+      //  List<PointageOperation> findByPointageId(Long pointageId);
+      void deleteByPointage(Pointage pointage);
+      void deleteAllByPointage(Pointage pointage);
 }

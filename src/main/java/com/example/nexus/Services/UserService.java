@@ -96,6 +96,11 @@ public class UserService {
                 .orElseThrow(() -> new UserCompagneNotFoundException("UserCompagne non trouvée."));
     }
 
+    public User findByIdUser(Long userCompagneId) {
+        return userRepository.findById(userCompagneId)
+                .orElseThrow(() -> new UserCompagneNotFoundException("UserCompagne non trouvée."));
+    }
+
     @Transactional
     public UserCompagne updateUserCompagne(Long userCompagneId, UserCompagneDTO dto) {
         // Fetch the existing UserCompagne entity
