@@ -30,7 +30,6 @@ public class PointageController {
     @Autowired
     private PointageService pointageService;
 
-
     // Récupérer tous les pointages
     @GetMapping
     public ResponseEntity<List<PointageDTO>> getAllPointages() {
@@ -38,7 +37,7 @@ public class PointageController {
         return ResponseEntity.ok(ObjectMapper.mapAll(pointages, PointageDTO.class));
     }
 
-      @PostMapping("/valider/{id}")
+    @PostMapping("/valider/{id}")
     public ResponseEntity<Map<String, String>> valider(
             @PathVariable Long id,
             @RequestParam EtatDemande etat) { // Utilisez @RequestParam pour récupérer l'état
@@ -58,31 +57,40 @@ public class PointageController {
         }
     }
 
+    @GetMapping("/supervisor/{supervisorId}")
+    public ResponseEntity<List<PointageDTO>> getAllBySupervisor(@PathVariable Long supervisorId) {
+        List<Pointage> pointages = pointageService.getAllBySupervisor(supervisorId);
+        return ResponseEntity.ok(ObjectMapper.mapAll(pointages, PointageDTO.class));
+    }
+
+    @GetMapping("/project-leader/{projectLeaderId}")
+    public ResponseEntity<List<PointageDTO>> getAllByProjectLeader(@PathVariable Long projectLeaderId) {
+        List<Pointage> pointages = pointageService.getAllByProjectLeader(projectLeaderId);
+        return ResponseEntity.ok(ObjectMapper.mapAll(pointages, PointageDTO.class));
+    }
 
     @PostMapping("/withoperation")
-public ResponseEntity<Pointage> createPointageWithOperations(@RequestBody Pointage pointage) {
-    Pointage createdPointage = pointageService.createPointageWithOperations(pointage);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdPointage);
-}
-
-@PutMapping("/withoperation/{id}")
-public ResponseEntity<Pointage> updatePointageWithOperations(
-        @PathVariable Long id,
-        @RequestBody Pointage pointage
-) {
-    Pointage updatedPointage = pointageService.updatePointageWithOperations(id, pointage);
-    if (updatedPointage == null) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Pointage> createPointageWithOperations(@RequestBody Pointage pointage) {
+        Pointage createdPointage = pointageService.createPointageWithOperations(pointage);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPointage);
     }
-    return ResponseEntity.ok(updatedPointage);
-}
+
+    @PutMapping("/withoperation/{id}")
+    public ResponseEntity<Pointage> updatePointageWithOperations(
+            @PathVariable Long id,
+            @RequestBody Pointage pointage) {
+        Pointage updatedPointage = pointageService.updatePointageWithOperations(id, pointage);
+        if (updatedPointage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updatedPointage);
+    }
 
     // Créer des pointages pour un superviseur donné
     @PostMapping("/create-by-supervisor/{id}")
     public ResponseEntity<List<PointageDTO>> createPointagesBySupervisor(
             @PathVariable Long id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         User supervisor = new User();
         supervisor.setIdUser(id);
         List<Pointage> createdPointages = pointageService.createPointagesBySupervisor(supervisor, date);
@@ -93,8 +101,7 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     @PostMapping("/{pointageId}/operations")
     public ResponseEntity<PointageOperation> addOperationToPointage(
             @PathVariable Long pointageId,
-            @RequestBody PointageOperation operation
-    ) {
+            @RequestBody PointageOperation operation) {
         PointageOperation addedOperation = pointageService.addOperationToPointage(pointageId, operation);
         return ResponseEntity.ok(addedOperation);
     }
@@ -103,8 +110,7 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     @PutMapping("/operations/{operationId}")
     public ResponseEntity<PointageOperation> updateOperation(
             @PathVariable Long operationId,
-            @RequestBody PointageOperation operation
-    ) {
+            @RequestBody PointageOperation operation) {
         PointageOperation updatedOperation = pointageService.updateOperation(operationId, operation);
         return ResponseEntity.ok(updatedOperation);
     }
@@ -117,13 +123,16 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     }
 
     // Récupérer les pointages par date
-   /*  @GetMapping("/by-date")
-    public ResponseEntity<List<Pointage>> getPointagesByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        List<Pointage> pointages = pointageService.getPointagesByDate(date);
-        return ResponseEntity.ok(pointages);
-    }*/
+    /*
+     * @GetMapping("/by-date")
+     * public ResponseEntity<List<Pointage>> getPointagesByDate(
+     * 
+     * @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+     * ) {
+     * List<Pointage> pointages = pointageService.getPointagesByDate(date);
+     * return ResponseEntity.ok(pointages);
+     * }
+     */
 
     // Récupérer un pointage par son ID
     @GetMapping("/{id}")
@@ -146,8 +155,7 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     @PutMapping("/{id}")
     public ResponseEntity<Pointage> updatePointage(
             @PathVariable Long id,
-            @RequestBody Pointage pointage
-    ) {
+            @RequestBody Pointage pointage) {
         Pointage updatedPointage = pointageService.updatePointage(id, pointage);
         if (updatedPointage == null) {
             return ResponseEntity.notFound().build();
@@ -163,20 +171,23 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     }
 
     // Importer un fichier Excel
-   /* @PostMapping("/import")
-    public ResponseEntity<?> importerFichierExcel(@RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Le fichier est vide.");
-            }
-            List<PointageDTO> pointages = pointageService.importerFichierExcel(file);
-            return ResponseEntity.ok(pointages);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de l'importation du fichier Excel : " + e.getMessage());
-        }
-    }*/
-    
+    /*
+     * @PostMapping("/import")
+     * public ResponseEntity<?> importerFichierExcel(@RequestParam("file")
+     * MultipartFile file) {
+     * try {
+     * if (file.isEmpty()) {
+     * return ResponseEntity.badRequest().body("Le fichier est vide.");
+     * }
+     * List<PointageDTO> pointages = pointageService.importerFichierExcel(file);
+     * return ResponseEntity.ok(pointages);
+     * } catch (IOException e) {
+     * return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+     * .body("Erreur lors de l'importation du fichier Excel : " + e.getMessage());
+     * }
+     * }
+     */
+
     // Valider un pointage
     @PostMapping("/{id}/validate")
     public ResponseEntity<Pointage> validatePointage(@PathVariable Long id) {
@@ -188,25 +199,33 @@ public ResponseEntity<Pointage> updatePointageWithOperations(
     }
 
     // Obtenir toutes les opérations d'un pointage
-  /*   @GetMapping("/{pointageId}/operations")
-    public ResponseEntity<List<PointageOperation>> getOperationsByPointageId(@PathVariable Long pointageId) {
-        List<PointageOperation> operations = pointageService.getOperationsByPointageId(pointageId);
-        return ResponseEntity.ok(operations);
-    }*/
+    /*
+     * @GetMapping("/{pointageId}/operations")
+     * public ResponseEntity<List<PointageOperation>>
+     * getOperationsByPointageId(@PathVariable Long pointageId) {
+     * List<PointageOperation> operations =
+     * pointageService.getOperationsByPointageId(pointageId);
+     * return ResponseEntity.ok(operations);
+     * }
+     */
 
     // Exporter les pointages vers un fichier Excel
- /*    @GetMapping("/export/excel")
-    public ResponseEntity<byte[]> exportPointagesToExcel(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        try {
-            byte[] excelData = pointageService.exportPointagesToExcel(date);
-            return ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment; filename=pointages.xlsx")
-                    .body(excelData);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }*/
+    /*
+     * @GetMapping("/export/excel")
+     * public ResponseEntity<byte[]> exportPointagesToExcel(
+     * 
+     * @RequestParam(required = false) @DateTimeFormat(iso =
+     * DateTimeFormat.ISO.DATE) LocalDate date
+     * ) {
+     * try {
+     * byte[] excelData = pointageService.exportPointagesToExcel(date);
+     * return ResponseEntity.ok()
+     * .header("Content-Disposition", "attachment; filename=pointages.xlsx")
+     * .body(excelData);
+     * } catch (Exception e) {
+     * return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+     * .body(null);
+     * }
+     * }
+     */
 }

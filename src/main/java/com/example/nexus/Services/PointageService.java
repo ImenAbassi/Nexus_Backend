@@ -1,44 +1,28 @@
 package com.example.nexus.Services;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.util.EnumUtils;
-
-import com.example.nexus.Dto.PointageDTO;
-import com.example.nexus.Entitie.AutorisationSortie;
 import com.example.nexus.Entitie.EtatDemande;
 import com.example.nexus.Entitie.Pointage;
 import com.example.nexus.Entitie.PointageOperation;
 import com.example.nexus.Entitie.User;
 import com.example.nexus.Entitie.UserCompagne;
-import com.example.nexus.Repository.CompagneRepository;
 import com.example.nexus.Repository.PointageOperationRepository;
 import com.example.nexus.Repository.PointageRepository;
 import com.example.nexus.Repository.UserCompagneRepository;
 import com.example.nexus.Repository.UserRepository;
-import com.example.nexus.mapper.ObjectMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -379,6 +363,14 @@ public Pointage updatePointageWithOperations(Long id, Pointage pointageDetails) 
             throw new Exception("Erreur lors de l'exportation des pointages : " + e.getMessage(), e);
         }
     }*/
+
+    public List<Pointage> getAllBySupervisor(Long supervisorId) {
+        return pointageRepository.findAllBySupervisor(supervisorId);
+    }
+
+    public List<Pointage> getAllByProjectLeader(Long projectLeaderId) {
+        return pointageRepository.findAllByProjectLeader(projectLeaderId);
+    }
 
 }
 

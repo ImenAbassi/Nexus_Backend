@@ -35,6 +35,6 @@ public interface UserCompagneApi {
 	ResponseEntity<List<UserCompagneDTO>> getAll();
 
 	  @GetMapping("/supervisor/{id}")
-    public List<UserCompagne> getUserCompagnesBySupervisor(@PathVariable Long id);
+    public List<UserCompagneDTO> getUserCompagnesBySupervisor(@PathVariable Long id);
 
 }

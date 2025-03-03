@@ -51,13 +51,13 @@ public class UserCompagneController implements UserCompagneApi {
 	}
 
 	@Override
-	public List<UserCompagne> getUserCompagnesBySupervisor(Long id) {
+	public List<UserCompagneDTO> getUserCompagnesBySupervisor(Long id) {
 			// Assuming you have a UserService to fetch the User by ID
 			User supervisor = userService.findByIdUser(id); // Replace with your actual logic
 			if (supervisor == null) {
 				throw new RuntimeException("Supervisor not found"); // Handle exception as needed
 			}
-			return usercompagneService.getAllBySupervisor(supervisor);
+			return ObjectMapper.mapAll(usercompagneService.getAllBySupervisor(supervisor), UserCompagneDTO.class);
 		}
 
 }
