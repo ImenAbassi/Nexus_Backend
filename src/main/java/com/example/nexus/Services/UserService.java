@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,45 +97,46 @@ public class UserService {
     }
 
     @Transactional
-public UserCompagne updateUserCompagne(Long userCompagneId, UserCompagneDTO dto) {
-    // Fetch the existing UserCompagne entity
-    UserCompagne userCompagne = userCompagneRepository.findById(userCompagneId)
-            .orElseThrow(() -> new UserCompagneNotFoundException("UserCompagne non trouvée."));
+    public UserCompagne updateUserCompagne(Long userCompagneId, UserCompagneDTO dto) {
+        // Fetch the existing UserCompagne entity
+        UserCompagne userCompagne = userCompagneRepository.findById(userCompagneId)
+                .orElseThrow(() -> new UserCompagneNotFoundException("UserCompagne non trouvée."));
 
-    // Fetch the existing User entity
-    User existingUser = userCompagne.getUser();
+        // Fetch the existing User entity
+        User existingUser = userCompagne.getUser();
 
-    // Update the existing User entity with new data
-    existingUser.setCin(dto.getUser().getCin());
-    existingUser.setNom(dto.getUser().getNom());
-    existingUser.setPrenom(dto.getUser().getPrenom());
-    existingUser.setTelPortable1(dto.getUser().getTelPortable1());
-    existingUser.setAdresseMail(dto.getUser().getAdresseMail());
-    existingUser.setPassword(passwordEncoder.encode(dto.getUser().getPassword()));
+        // Update the existing User entity with new data
+        existingUser.setCin(dto.getUser().getCin());
+        existingUser.setNom(dto.getUser().getNom());
+        existingUser.setPrenom(dto.getUser().getPrenom());
+        existingUser.setTelPortable1(dto.getUser().getTelPortable1());
+        existingUser.setAdresseMail(dto.getUser().getAdresseMail());
+        existingUser.setPassword(passwordEncoder.encode(dto.getUser().getPassword()));
 
-    // Save the updated User entity
-    existingUser = userRepository.save(existingUser);
+        // Save the updated User entity
+        existingUser = userRepository.save(existingUser);
 
-    // Fetch the Compagne entity
-    Compagne compagne = compagneRepository.findById(dto.getCompagneId())
-            .orElseThrow(() -> new CompagneNotFoundException("Compagne non trouvée."));
+        // Fetch the Compagne entity
+        Compagne compagne = compagneRepository.findById(dto.getCompagneId())
+                .orElseThrow(() -> new CompagneNotFoundException("Compagne non trouvée."));
 
-    // Fetch the Fonction entity
-    Fonction fonction = fonctionRepository.findById(dto.getFonctionId())
-            .orElseThrow(() -> new RuntimeException("Fonction non trouvée."));
+        // Fetch the Fonction entity
+        Fonction fonction = fonctionRepository.findById(dto.getFonctionId())
+                .orElseThrow(() -> new RuntimeException("Fonction non trouvée."));
 
-    // Update the UserCompagne entity
-    userCompagne.setUser(existingUser);
-    userCompagne.setCompagne(compagne);
-    userCompagne.setFonction(fonction);
-    userCompagne.setCommentaire(dto.getCommentaire());
-    userCompagne.setDateAffectation(dto.getDateAffectation());
-    userCompagne.setDateFinAffectation(dto.getDateFinAffectation());
-    userCompagne.setDateHeureFormation(dto.getDateHeureFormation());
+        // Update the UserCompagne entity
+        userCompagne.setUser(existingUser);
+        userCompagne.setCompagne(compagne);
+        userCompagne.setFonction(fonction);
+        userCompagne.setCommentaire(dto.getCommentaire());
+        userCompagne.setDateAffectation(dto.getDateAffectation());
+        userCompagne.setDateFinAffectation(dto.getDateFinAffectation());
+        userCompagne.setDateHeureFormation(dto.getDateHeureFormation());
 
-    // Save the updated UserCompagne entity
-    return userCompagneRepository.save(userCompagne);
-}
+        // Save the updated UserCompagne entity
+        return userCompagneRepository.save(userCompagne);
+    }
+
     @Transactional
     public UserCompagne assignUserToCompagne(Long userId, Long compagneId, Long fonctionId, String commentaire,
             LocalDate dateFinAffectation) {
@@ -376,5 +379,22 @@ public UserCompagne updateUserCompagne(Long userCompagneId, UserCompagneDTO dto)
         }
 
         return result;
+    }
+
+    @Transactional
+    public ResponseEntity<?> changeUserPassword(Long userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Utilisateur non trouvé"));
+
+        // Vérifier si l'ancien mot de passe correspond
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ancien mot de passe incorrect");
+        }
+
+        // Mettre à jour le mot de passe
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Mot de passe mis à jour avec succès");
     }
 }
