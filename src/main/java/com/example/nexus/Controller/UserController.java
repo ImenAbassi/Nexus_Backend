@@ -1,5 +1,6 @@
 package com.example.nexus.Controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,26 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+     @PostMapping("/create-from-candidat/{candidatId}")
+    public ResponseEntity<Map<String, Object>> createUserFromCandidat(@PathVariable Long candidatId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Appeler le service pour créer un User et un UserCompagne
+            userService.createUserAndUserCompagneFromCandidat(candidatId);
+
+            // Construire la réponse en cas de succès
+            response.put("status", "success");
+            response.put("message", "User and UserCompagne created successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            // Construire la réponse en cas d'erreur
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
     @PostMapping("/create-and-assign")
     public ResponseEntity<?> createUserAndAssignToCompagne(@RequestBody UserCompagneDTO dto) {
@@ -139,4 +160,37 @@ public ResponseEntity<?> changePassword(@PathVariable Long idUser, @RequestBody 
 
     return userService.changeUserPassword(idUser, oldPassword, newPassword);
 }
+
+ // Ajouter un User
+ @PostMapping("add")
+ public ResponseEntity<Map<String, Object>> addUser(@RequestBody User user) {
+     Map<String, Object> response = new HashMap<>();
+     try {
+         User savedUser = userService.saveUser(user);
+         response.put("status", "success");
+         response.put("data", savedUser);
+         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+     } catch (RuntimeException e) {
+         response.put("status", "error");
+         response.put("message", e.getMessage());
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+     }
+ }
+
+ // Modifier un User
+ @PutMapping("update/{id}")
+ public ResponseEntity<Map<String, Object>> updateUsers(@PathVariable Long id, @RequestBody User user) {
+     Map<String, Object> response = new HashMap<>();
+     try {
+         user.setIdUser(id); // S'assurer que l'ID est correct
+         User updatedUser = userService.saveUser(user);
+         response.put("status", "success");
+         response.put("data", updatedUser);
+         return ResponseEntity.ok(response);
+     } catch (RuntimeException e) {
+         response.put("status", "error");
+         response.put("message", e.getMessage());
+         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+     }
+ }
 }

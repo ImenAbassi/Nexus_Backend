@@ -42,7 +42,6 @@ public class ReactionService {
             reaction.setPost(post);
             reaction.setType(type);
             reaction.setReactedBy(reactedBy);
-            reaction.setReactedAt(LocalDateTime.now());
             post.getReactionCounts().put(type, post.getReactionCounts().getOrDefault(type, 0L) + 1);
             return reactionRepository.save(reaction);
         }

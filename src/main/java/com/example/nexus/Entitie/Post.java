@@ -1,10 +1,12 @@
 package com.example.nexus.Entitie;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.example.nexus.Entitie.inhertance.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -27,19 +29,19 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
+public class Post extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title; // Titre du post
-    private String content; // Texte du post
+    private String title;
+    private String content;
 
-    // Champs pour les médias (peuvent être nuls)
-    private String mediaType; // "IMAGE", "VIDEO" ou null pour aucun média
-    private String mediaUrl = ""; // Valeur par défaut
+    private String mediaType;
+    private String mediaUrl = "";
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Reaction> reactions = new ArrayList<>();
 
     @ElementCollection
@@ -48,8 +50,5 @@ public class Post {
     @Column(name = "count")
     private Map<ReactionType, Long> reactionCounts = new HashMap<>();
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    // Getters et Setters
+    // Getters and Setters
 }

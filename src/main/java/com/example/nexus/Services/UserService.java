@@ -14,10 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.nexus.Dto.UserCompagneDTO;
+import com.example.nexus.Entitie.Candidat;
 import com.example.nexus.Entitie.Compagne;
 import com.example.nexus.Entitie.Enfant;
 import com.example.nexus.Entitie.Fonction;
 import com.example.nexus.Entitie.MouvementHistorique;
+import com.example.nexus.Entitie.Role;
 import com.example.nexus.Entitie.Societe;
 import com.example.nexus.Entitie.User;
 import com.example.nexus.Entitie.UserCompagne;
@@ -25,9 +27,11 @@ import com.example.nexus.Exceptions.CompagneNotFoundException;
 import com.example.nexus.Exceptions.SocieteNotFoundException;
 import com.example.nexus.Exceptions.UserCompagneNotFoundException;
 import com.example.nexus.Exceptions.UserNotFoundException;
+import com.example.nexus.Repository.CandidatRepository;
 import com.example.nexus.Repository.CompagneRepository;
 import com.example.nexus.Repository.FonctionRepository;
 import com.example.nexus.Repository.MouvementHistoriqueRepository;
+import com.example.nexus.Repository.RoleRepository;
 import com.example.nexus.Repository.SocieteRepository;
 import com.example.nexus.Repository.UserCompagneRepository;
 import com.example.nexus.Repository.UserRepository;
@@ -55,6 +59,12 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+     @Autowired
+    private CandidatRepository candidatRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Transactional
     public UserCompagne createUserAndAssignToCompagne(
@@ -402,4 +412,56 @@ public class UserService {
 
         return ResponseEntity.ok("Mot de passe mis à jour avec succès");
     }
+
+     @Transactional
+    public void createUserAndUserCompagneFromCandidat(Long candidatId) {
+        // Fetch the Candidat object
+        Candidat candidat = candidatRepository.findById(candidatId)
+                .orElseThrow(() -> new RuntimeException("Candidat not found with id: " + candidatId));
+
+        // Create a new User object and map fields from Candidat
+        User user = new User();
+        user.setPrenom(candidat.getPrenom());
+        user.setNom(candidat.getNom());
+        user.setCin(candidat.getCin());
+        user.setAdresseMail(candidat.getAdresseMail());
+        user.setTelPortable1(candidat.getTelPortable1());
+        user.setSexe(candidat.getSexe());
+        user.setPassword(candidat.getCin());
+        user = userRepository.save(user);
+
+        // Fetch the associated Compagne from the Candidat
+        Compagne compagne = candidat.getCompagne();
+        if (compagne == null) {
+            throw new RuntimeException("Candidat is not associated with any Compagne");
+        }
+
+        // Create a new UserCompagne object
+        UserCompagne userCompagne = new UserCompagne();
+        userCompagne.setUser(user);
+        userCompagne.setCompagne(compagne);
+
+        // Set default or required fields for UserCompagne
+        userCompagne.setDateHeureFormation(candidat.getDateHeureFormation());
+        userCompagne.setDateAffectation(LocalDate.now()); // Set the current date as the date of assignment
+
+        Fonction defaultFonction = fonctionRepository.findById(1L) // Replace with your logic to fetch a default Fonction
+                .orElseThrow(() -> new RuntimeException("Default Fonction not found"));
+        userCompagne.setFonction(defaultFonction);
+
+        Role defaultRole = roleRepository.findById(1L) // Replace with your logic to fetch a default Role
+                .orElseThrow(() -> new RuntimeException("Default Role not found"));
+        userCompagne.setRole(defaultRole);
+
+        // Save the UserCompagne object
+        userCompagneRepository.save(userCompagne);
+        candidatRepository.delete(candidat);
+
+    }
+
+    @Transactional
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
 }

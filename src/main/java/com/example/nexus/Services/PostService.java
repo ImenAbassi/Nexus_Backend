@@ -26,8 +26,6 @@ public class PostService {
 
     // Créer un post
     public Post createPost(Post post) {
-        post.setCreatedAt(LocalDateTime.now());
-        post.setUpdatedAt(LocalDateTime.now());
         return postRepository.save(post);
     }
 
@@ -72,7 +70,6 @@ public class PostService {
                 throw new RuntimeException("Erreur lors de la gestion du fichier : " + e.getMessage());
             }
     
-            post.setUpdatedAt(LocalDateTime.now());
             return postRepository.save(post);
         }).orElseThrow(() -> new RuntimeException("Post not found"));
     }
