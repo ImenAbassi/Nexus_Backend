@@ -3,6 +3,7 @@ package com.example.nexus.Controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -117,13 +118,16 @@ public class UserController {
         return userService.getUsersWithSupervisorOrProjectLeader();
     }
 
-    @GetMapping("/{idUser}")
-    public ResponseEntity<User> getUserById(@PathVariable Long idUser) {
-        return userService.getUserById(idUser)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @GetMapping("/getById/{idUser}")
+public ResponseEntity<User> getUserById(@PathVariable Long idUser) {
+    Optional<User> userOptional = userService.getUserById(idUser);
 
+    if (userOptional.isPresent()) {
+        return ResponseEntity.ok(userOptional.get()); // Retourne l'utilisateur avec un statut 200 OK
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Retourne un statut 404 NOT FOUND
+    }
+}
     @PutMapping("/{idUser}")
     public ResponseEntity<User> updateUser(@PathVariable Long idUser, @RequestBody User userDetails) {
         User updatedUser = userService.updateUser(idUser, userDetails);

@@ -3,7 +3,6 @@ package com.example.nexus.Entitie;
 import java.time.LocalDate;
 
 import com.example.nexus.Entitie.inhertance.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,6 +19,8 @@ public class Taxi extends BaseEntity {
 
     @Column(nullable = false)
     private String localisationArrivee; // Localisation d'arrivée
+
+    private String localisationMap; // Localisation d'arrivée
 
     @Column(name = "heure_depart")
     private String heureDepart; // Heure de départ
